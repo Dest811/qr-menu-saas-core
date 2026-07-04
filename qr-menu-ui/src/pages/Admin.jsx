@@ -12,6 +12,7 @@ export default function Admin() {
   const [cafeSlug, setCafeSlug] = useState('');
   const [cafeCustomDomain, setCafeCustomDomain] = useState('');
   const [stats, setStats] = useState({ totalCafes: 0, totalActiveProducts: 0 });
+  const [isSavingCafe, setIsSavingCafe] = useState(false);
 
   useEffect(() => {
     fetchCafes();
@@ -92,13 +93,18 @@ export default function Admin() {
 
   const handleSaveCafe = async (e) => {
     e.preventDefault(); 
+    if (!cafeName || !cafeSlug) {
+      alert("Kafe adı ve sistem linki zorunludur.");
+      return;
+    }
+    setIsSavingCafe(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/cafes`, {
         method: 'POST',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ 
-          name: cafeName, 
-          slug: cafeSlug, 
+          name: cafeName.trim(), 
+          slug: cafeSlug.trim(), 
           custom_domain: cafeCustomDomain ? cafeCustomDomain.trim() : null 
         }),
       });
@@ -113,9 +119,17 @@ export default function Admin() {
         setCafeCustomDomain('');
         setIsModalOpen(false);
         fetchStats();
+        alert("Kafe başarıyla oluşturuldu!");
+      } else {
+        const errorData = await response.json();
+        console.error("Kafe ekleme sunucu hatası:", errorData);
+        alert("Kafe oluşturulamadı: " + (errorData.error || "Bilinmeyen hata. Sistem linki (slug) veya alan adı kullanımda olabilir."));
       }
     } catch (error) {
-      console.error("Error saving cafe:", error);
+      console.error("Kafe kaydetme bağlantı hatası:", error);
+      alert("Kafe oluşturulamadı, lütfen bağlantınızı kontrol edip tekrar deneyin.");
+    } finally {
+      setIsSavingCafe(false);
     }
   };
 
@@ -287,9 +301,10 @@ export default function Admin() {
                   </button>
                   <button 
                     type="submit" 
-                    className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white transition-colors"
+                    disabled={isSavingCafe}
+                    className={`bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white transition-colors ${isSavingCafe ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    Sisteme Kaydet
+                    {isSavingCafe ? 'Kaydediliyor...' : 'Sisteme Kaydet'}
                   </button>
                 </div>
               </form>
