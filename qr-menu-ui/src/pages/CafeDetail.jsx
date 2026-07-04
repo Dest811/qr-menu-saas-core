@@ -24,6 +24,14 @@ export default function CafeDetail() {
   const [productPrice, setProductPrice] = useState('');
   const [productImageUrl, setProductImageUrl] = useState('');
 
+  // --- ÜRÜN DÜZENLEME STATE'LERİ ---
+  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+  const [selectedProductToEdit, setSelectedProductToEdit] = useState(null);
+  const [editProductName, setEditProductName] = useState('');
+  const [editProductDescription, setEditProductDescription] = useState('');
+  const [editProductPrice, setEditProductPrice] = useState('');
+  const [editProductImageUrl, setEditProductImageUrl] = useState('');
+
   // --- YENİ: TASARIM AYARLARI STATE VE FONKSİYONU ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [cafeDetails, setCafeDetails] = useState(null);
@@ -248,6 +256,44 @@ export default function CafeDetail() {
     }
   };
 
+  const openProductEdit = (product) => {
+    setSelectedProductToEdit(product);
+    setEditProductName(product.name);
+    setEditProductPrice(product.price);
+    setEditProductDescription(product.description || '');
+    setEditProductImageUrl(product.image_url || '');
+    setIsEditProductModalOpen(true);
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/products/${selectedProductToEdit.id}`, {
+        method: 'PUT',
+        headers: getHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          name: editProductName,
+          description: editProductDescription,
+          price: parseFloat(editProductPrice),
+          image_url: editProductImageUrl
+        }),
+      });
+
+      if (handleAuthError(response)) return;
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProducts(products.map(prod => prod.id === selectedProductToEdit.id ? updatedProduct : prod));
+        setIsEditProductModalOpen(false);
+      } else {
+        const errorData = await response.json();
+        alert("Güncelleme Başarısız: " + errorData.error);
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
       <div className="max-w-6xl mx-auto">
@@ -454,6 +500,15 @@ export default function CafeDetail() {
                             >
                               {product.is_active ? 'SATIŞTA' : 'TÜKENDİ'}
                             </button>
+                            <button
+                              onClick={() => openProductEdit(product)}
+                              className="text-slate-400 hover:text-blue-400 p-2 cursor-pointer"
+                              title="Düzenle"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
                             <button 
                               onClick={() => handleDeleteProduct(product.id)}
                               className="text-slate-500 hover:text-red-500 p-2"
@@ -551,6 +606,65 @@ export default function CafeDetail() {
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setIsSettingsOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
                   <button type="submit" className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50">Ayarları Kaydet</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ÜRÜN DÜZENLEME MODALI */}
+        {isEditProductModalOpen && selectedProductToEdit && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
+            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Ürünü Düzenle</h2>
+                <button onClick={() => setIsEditProductModalOpen(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
+              </div>
+
+              <form onSubmit={handleUpdateProduct}>
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={editProductName} 
+                    onChange={(e) => setEditProductName(e.target.value)} 
+                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-400 mb-1 font-medium">Fiyat (TL)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    value={editProductPrice} 
+                    onChange={(e) => setEditProductPrice(e.target.value)} 
+                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama</label>
+                  <textarea 
+                    value={editProductDescription} 
+                    onChange={(e) => setEditProductDescription(e.target.value)} 
+                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm text-slate-400 mb-1 font-medium">Görsel Linki</label>
+                  <input 
+                    type="text" 
+                    value={editProductImageUrl} 
+                    onChange={(e) => setEditProductImageUrl(e.target.value)} 
+                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => setIsEditProductModalOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
+                  <button type="submit" className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50">Güncelle</button>
                 </div>
               </form>
             </div>

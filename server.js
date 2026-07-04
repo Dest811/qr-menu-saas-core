@@ -58,6 +58,11 @@ app.get('/', (req, res) => {
   res.send('QR Menü SaaS Backend Sistemi Harika Çalışıyor!');
 });
 
+// HEALTH CHECK
+app.get('/health', (req, res) => {
+  res.json({ status: "ok", message: "Backend ayakta" });
+});
+
 // TEST BAĞLANTISI ROTOSU
 app.get('/api/test-db', async (req, res) => {
   try {
@@ -306,6 +311,28 @@ app.delete('/api/products/:id', verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Ürün silinirken hata oluştu." });
+  }
+});
+
+// 5. Ürün bilgilerini güncelle (PUT) - [KORUMALI]
+app.put('/api/products/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, image_url, is_active } = req.body;
+
+    const updatedProduct = await pool.query(
+      'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, is_active = COALESCE($5, is_active) WHERE id = $6 RETURNING *',
+      [name, description || null, price, image_url || null, is_active !== undefined ? is_active : null, id]
+    );
+
+    if (updatedProduct.rows.length === 0) {
+      return res.status(404).json({ error: "Güncellenmek istenen ürün bulunamadı." });
+    }
+
+    res.json(updatedProduct.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Ürün güncellenirken hata oluştu." });
   }
 });
 
