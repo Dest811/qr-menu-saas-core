@@ -19,12 +19,31 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-// Güvenlik ve veri okuma ayarları (React ile haberleşmek için şart)
-app.use(cors({
-  origin: '*',
+const allowedOrigins = [
+  'https://qr-menu-admin-six.vercel.app',
+  'https://qr-menu-musteri.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Mobil uygulamalar veya curl istekleri gibi origin bilgisi olmayan istekler
+    if (!origin) return callback(null, true);
+    
+    // Belirlenmiş originler veya SaaS sisteminin white-label özel alan adları (localhost/127.0.0.1 içermeyenler)
+    if (allowedOrigins.indexOf(origin) !== -1 || (!origin.includes('localhost') && !origin.includes('127.0.0.1'))) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS politikanız bu isteğe izin vermiyor.'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Veritabanı (Supabase) Bağlantısını Kuruyoruz
