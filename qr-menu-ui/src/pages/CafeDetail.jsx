@@ -31,6 +31,7 @@ export default function CafeDetail() {
   const [editProductDescription, setEditProductDescription] = useState('');
   const [editProductPrice, setEditProductPrice] = useState('');
   const [editProductImageUrl, setEditProductImageUrl] = useState('');
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   // --- YENİ: TASARIM AYARLARI STATE VE FONKSİYONU ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -267,6 +268,7 @@ export default function CafeDetail() {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+    setIsSavingProduct(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${selectedProductToEdit.id}`, {
         method: 'PUT',
@@ -285,12 +287,17 @@ export default function CafeDetail() {
         const updatedProduct = await response.json();
         setProducts(products.map(prod => prod.id === selectedProductToEdit.id ? updatedProduct : prod));
         setIsEditProductModalOpen(false);
+        alert("Ürün başarıyla güncellendi!");
       } else {
         const errorData = await response.json();
-        alert("Güncelleme Başarısız: " + errorData.error);
+        console.error("Ürün güncelleme sunucu hatası:", errorData);
+        alert("Ürün güncellenemedi: " + (errorData.error || "Bilinmeyen hata. Lütfen tekrar deneyin."));
       }
     } catch (error) {
-      console.error("Error updating product:", error);
+      console.error("Ürün güncelleme bağlantı hatası:", error);
+      alert("Ürün güncellenemedi, lütfen bağlantınızı kontrol edip tekrar deneyin.");
+    } finally {
+      setIsSavingProduct(false);
     }
   };
 
@@ -664,7 +671,13 @@ export default function CafeDetail() {
 
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setIsEditProductModalOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
-                  <button type="submit" className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50">Güncelle</button>
+                  <button 
+                    type="submit" 
+                    disabled={isSavingProduct}
+                    className={`bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50 transition-all ${isSavingProduct ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSavingProduct ? 'Güncelleniyor...' : 'Güncelle'}
+                  </button>
                 </div>
               </form>
             </div>

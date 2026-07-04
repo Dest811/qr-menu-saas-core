@@ -317,13 +317,28 @@ app.delete('/api/products/:id', verifyToken, async (req, res) => {
 // 5. Ürün bilgilerini güncelle (PUT) - [KORUMALI]
 app.put('/api/products/:id', verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const productId = parseInt(req.params.id);
+    if (isNaN(productId)) {
+      return res.status(400).json({ error: "Geçersiz ürün kimliği." });
+    }
+
     const { name, description, price, image_url, is_active } = req.body;
 
-    const updatedProduct = await pool.query(
-      'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, is_active = COALESCE($5, is_active) WHERE id = $6 RETURNING *',
-      [name, description || null, price, image_url || null, is_active !== undefined ? is_active : null, id]
-    );
+    if (!name || price === undefined || isNaN(parseFloat(price))) {
+      return res.status(400).json({ error: "Ürün adı ve geçerli bir fiyat zorunludur." });
+    }
+
+    // Basit ve temiz güncelleme sorgusu (is_active isteğe bağlı)
+    let query, params;
+    if (is_active !== undefined) {
+      query = 'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, is_active = $5 WHERE id = $6 RETURNING *';
+      params = [name, description || null, parseFloat(price), image_url || null, is_active, productId];
+    } else {
+      query = 'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 RETURNING *';
+      params = [name, description || null, parseFloat(price), image_url || null, productId];
+    }
+
+    const updatedProduct = await pool.query(query, params);
 
     if (updatedProduct.rows.length === 0) {
       return res.status(404).json({ error: "Güncellenmek istenen ürün bulunamadı." });
@@ -331,8 +346,8 @@ app.put('/api/products/:id', verifyToken, async (req, res) => {
 
     res.json(updatedProduct.rows[0]);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Ürün güncellenirken hata oluştu." });
+    console.error("Ürün güncelleme hatası:", err.message);
+    res.status(500).json({ error: "Ürün güncellenirken sunucu hatası oluştu." });
   }
 });
 
