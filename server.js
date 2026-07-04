@@ -39,6 +39,7 @@ const corsOptions = {
     }
   },
   credentials: true,
+  optionsSuccessStatus: 200, // Tarayıcı OPTIONS preflight taleplerine 200 döner
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
@@ -74,7 +75,7 @@ const verifyToken = (req, res, next) => {
 
 // TEST ROTASI: Tarayıcıdan sunucuya girince göreceğimiz mesaj
 app.get('/', (req, res) => {
-  res.send('QR Menü SaaS Backend Sistemi Harika Çalışıyor!');
+  res.json({ message: 'QR Menü SaaS Backend Sistemi Harika Çalışıyor!' });
 });
 
 // HEALTH CHECK
@@ -385,6 +386,23 @@ app.get('/api/stats', async (req, res) => {
     console.error(err.message);
     res.status(500).json({ error: "İstatistikler yüklenirken hata oluştu." });
   }
+});
+
+// ==========================================
+// Hata ve Rota Bulunamadı Yönetimi (JSON Standardı)
+// ==========================================
+// Rota bulunamadığında 404 JSON yanıtı dön
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Aradığınız endpoint bulunamadı." });
+});
+
+// Global Hata Yakalayıcı Middleware (Error Handler)
+app.use((err, req, res, next) => {
+  console.error("Global Sunucu Hatası:", err.message || err);
+  if (err.message && err.message.includes('CORS')) {
+    return res.status(403).json({ error: err.message });
+  }
+  res.status(500).json({ error: "Sunucuda beklenmedik bir hata oluştu." });
 });
 
 // ==========================================
