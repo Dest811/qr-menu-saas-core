@@ -19,7 +19,7 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-const allowedOrigins = [
+const whitelist = [
   'https://qr-menu-admin-six.vercel.app',
   'https://qr-menu-musteri.vercel.app',
   'http://localhost:5173',
@@ -31,15 +31,15 @@ const corsOptions = {
     // Mobil uygulamalar veya curl istekleri gibi origin bilgisi olmayan istekler
     if (!origin) return callback(null, true);
     
-    // Belirlenmiş originler veya SaaS sisteminin white-label özel alan adları (localhost/127.0.0.1 içermeyenler)
-    if (allowedOrigins.indexOf(origin) !== -1 || (!origin.includes('localhost') && !origin.includes('127.0.0.1'))) {
+    // Whitelist veya SaaS sisteminin white-label özel alan adları (localhost/127.0.0.1 içermeyenler)
+    if (whitelist.indexOf(origin) !== -1 || (!origin.includes('localhost') && !origin.includes('127.0.0.1'))) {
       callback(null, true);
     } else {
-      callback(new Error('CORS politikanız bu isteğe izin vermiyor.'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200, // Tarayıcı OPTIONS preflight taleplerine 200 döner
+  optionsSuccessStatus: 200, // Preflight isteklerinde 405 veya 204 yerine 200 OK döner
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
@@ -105,7 +105,7 @@ app.post('/api/auth/login', (req, res) => {
   if (username === adminUser && password === adminPass) {
     // 24 saat geçerli JWT token üretiyoruz
     const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '24h' });
-    return res.json({ success: true, token });
+    return res.status(200).json({ success: true, token });
   }
 
   return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı!' });
