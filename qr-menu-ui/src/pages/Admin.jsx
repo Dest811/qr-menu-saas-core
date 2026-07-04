@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // YENİ: Link özelliğini kullanabilmek için ekledik
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
 export default function Admin() {
   const [cafes, setCafes] = useState([]);

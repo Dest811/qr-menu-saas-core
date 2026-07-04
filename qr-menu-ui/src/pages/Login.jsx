@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
 export default function Login() {
   const [username, setUsername] = useState('');
