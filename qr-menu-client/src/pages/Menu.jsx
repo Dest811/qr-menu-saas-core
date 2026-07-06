@@ -120,7 +120,7 @@ export default function Menu() {
   const primaryColor = cafe.primary_color || '#1A3626';
   const accentColor = cafe.accent_color || '#D4AF37';
   const bgColor = cafe.bg_color || '#F9F7F2';
-  const heroImage = cafe.hero_image || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+  const coverImage = cafe.coverImage || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
 
   return (
     <div className="min-h-screen font-sans pb-24 transition-colors duration-500 animate-fade-in" style={{ backgroundColor: bgColor }}>
@@ -129,7 +129,7 @@ export default function Menu() {
       <header className="relative pt-24 pb-20 px-6 text-center overflow-hidden shadow-lg">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('${heroImage}')` }}
+          style={{ backgroundImage: `url('${coverImage}')` }}
         ></div>
         <div className="absolute inset-0 opacity-75 mix-blend-multiply transition-colors duration-500" style={{ backgroundColor: primaryColor }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
@@ -311,13 +311,6 @@ export default function Menu() {
           </div>
         </div>
       )}
-
-      {/* FOOTER */}
-      <footer className="text-center pb-8 pt-4">
-        <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
-          Powered by <span style={{ color: accentColor }}>QR SaaS</span>
-        </p>
-      </footer>
     </div>
   );
 }

@@ -173,15 +173,16 @@ app.get('/api/cafes/domain/:domainName', async (req, res) => {
 
 // 5. Yeni kafe ekleme (POST) - [KORUMALI]
 app.post('/api/cafes', verifyToken, async (req, res) => {
-  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain } = req.body;
+  const { name, slug, logo_url, hero_image, coverImage, primary_color, accent_color, bg_color, custom_domain } = req.body;
   try {
     const newCafe = await pool.query(
-      'INSERT INTO cafes (name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
       [
         name, 
         slug, 
         logo_url || null, 
         hero_image || null, 
+        coverImage || null,
         primary_color || null, 
         accent_color || null, 
         bg_color || null, 
@@ -199,11 +200,11 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
 app.put('/api/cafes/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hero_image, primary_color, accent_color, bg_color, custom_domain } = req.body;
+    const { hero_image, coverImage, primary_color, accent_color, bg_color, custom_domain } = req.body;
     
     const updateCafe = await pool.query(
-      'UPDATE cafes SET hero_image = $1, primary_color = $2, accent_color = $3, bg_color = $4, custom_domain = $5 WHERE id = $6 RETURNING *',
-      [hero_image || null, primary_color || null, accent_color || null, bg_color || null, custom_domain || null, id]
+      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6 WHERE id = $7 RETURNING *',
+      [hero_image || null, coverImage || null, primary_color || null, accent_color || null, bg_color || null, custom_domain || null, id]
     );
     res.json(updateCafe.rows[0]);
   } catch (err) {

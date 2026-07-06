@@ -28,6 +28,7 @@ async function run() {
         slug VARCHAR(255) UNIQUE NOT NULL,
         logo_url TEXT,
         hero_image TEXT,
+        "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop',
         primary_color VARCHAR(50),
         accent_color VARCHAR(50),
         bg_color VARCHAR(50),
@@ -37,6 +38,16 @@ async function run() {
     `;
     await client.query(createCafesTable);
     console.log("✓ Table 'cafes' created (or already exists).");
+
+    // Ensure coverImage column exists in case the table already existed
+    try {
+      await client.query(`
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+      `);
+      console.log("✓ Column 'coverImage' verified / added.");
+    } catch (columnErr) {
+      console.warn("Column coverImage check failed:", columnErr.message);
+    }
 
     // Create categories table
     const createCategoriesTable = `

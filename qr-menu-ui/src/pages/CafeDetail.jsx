@@ -38,6 +38,7 @@ export default function CafeDetail() {
   const [cafeDetails, setCafeDetails] = useState(null);
   const [branding, setBranding] = useState({
     hero_image: '',
+    coverImage: '',
     primary_color: '#1A3626',
     accent_color: '#D4AF37',
     bg_color: '#F9F7F2',
@@ -72,6 +73,7 @@ export default function CafeDetail() {
         setCafeDetails(data);
         setBranding({
           hero_image: data.hero_image || '',
+          coverImage: data.coverImage || '',
           primary_color: data.primary_color || '#1A3626',
           accent_color: data.accent_color || '#D4AF37',
           bg_color: data.bg_color || '#F9F7F2',
@@ -556,6 +558,18 @@ export default function CafeDetail() {
                     placeholder="https://images.unsplash.com/..."
                   />
                   <p className="text-xs text-slate-500 mt-1">Sitenin en üstünde görünecek ana fotoğraf.</p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-slate-400 mb-1 text-sm font-medium">Kapak Fotoğrafı URL'i (coverImage)</label>
+                  <input 
+                    type="text" 
+                    value={branding.coverImage || ''}
+                    onChange={(e) => setBranding({...branding, coverImage: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white text-sm"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Müşteri arayüzünde banner arka planı olarak kullanılacak kapak fotoğrafı.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
