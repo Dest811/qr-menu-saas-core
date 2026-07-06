@@ -173,7 +173,8 @@ app.get('/api/cafes/domain/:domainName', async (req, res) => {
 
 // 5. Yeni kafe ekleme (POST) - [KORUMALI]
 app.post('/api/cafes', verifyToken, async (req, res) => {
-  const { name, slug, logo_url, hero_image, coverImage, primary_color, accent_color, bg_color, custom_domain } = req.body;
+  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain } = req.body;
+  const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
   try {
     const newCafe = await pool.query(
       'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
@@ -200,7 +201,8 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
 app.put('/api/cafes/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hero_image, coverImage, primary_color, accent_color, bg_color, custom_domain } = req.body;
+    const { hero_image, primary_color, accent_color, bg_color, custom_domain } = req.body;
+    const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
     
     const updateCafe = await pool.query(
       'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6 WHERE id = $7 RETURNING *',

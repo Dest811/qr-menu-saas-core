@@ -88,10 +88,20 @@ export default function CafeDetail() {
   const handleUpdateBranding = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        hero_image: branding.hero_image,
+        coverImage: branding.coverImage,
+        cover_image: branding.coverImage, // both camelCase and snake_case for maximum compatibility
+        primary_color: branding.primary_color,
+        accent_color: branding.accent_color,
+        bg_color: branding.bg_color,
+        custom_domain: branding.custom_domain
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
         method: 'PUT',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(branding),
+        body: JSON.stringify(payload),
       });
       
       if (handleAuthError(response)) return;
