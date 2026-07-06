@@ -204,13 +204,19 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
     const { hero_image, primary_color, accent_color, bg_color, custom_domain } = req.body;
     const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
     
+    console.log("Kafe güncelleme isteği alındı. ID:", id);
+    console.log("Gelen Gövde (Body):", req.body);
+    console.log("Çözümlenen coverImage:", coverImage);
+
     const updateCafe = await pool.query(
       'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6 WHERE id = $7 RETURNING *',
       [hero_image || null, coverImage || null, primary_color || null, accent_color || null, bg_color || null, custom_domain || null, id]
     );
+    
+    console.log("Güncelleme Sonrası Kayıt:", updateCafe.rows[0]);
     res.json(updateCafe.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error("Güncelleme Hatası:", err.message);
     res.status(500).json({ error: "Kafe ayarları güncellenemedi." });
   }
 });
