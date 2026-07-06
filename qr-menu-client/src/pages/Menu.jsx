@@ -120,7 +120,7 @@ export default function Menu() {
   const primaryColor = cafe.primary_color || '#1A3626';
   const accentColor = cafe.accent_color || '#D4AF37';
   const bgColor = cafe.bg_color || '#F9F7F2';
-  const coverImage = cafe.coverImage || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+  const coverImage = cafe.hero_image || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
 
   return (
     <div className="min-h-screen font-sans pb-24 transition-colors duration-500 animate-fade-in" style={{ backgroundColor: bgColor }}>
