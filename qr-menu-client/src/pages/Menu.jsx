@@ -22,6 +22,12 @@ export default function Menu() {
     fetchCafeData();
   }, [slug]);
 
+  useEffect(() => {
+    if (cafe) {
+      document.title = `${cafe.name} | Dijital Menü`;
+    }
+  }, [cafe]);
+
   const fetchCafeData = async () => {
     try {
       const hostname = window.location.hostname;
