@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { supabase } from '../supabase';
+
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
@@ -23,6 +25,7 @@ export default function CafeDetail() {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productImageUrl, setProductImageUrl] = useState('');
+  const [isAddUploading, setIsAddUploading] = useState(false);
 
   // --- ÜRÜN DÜZENLEME STATE'LERİ ---
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
@@ -32,6 +35,7 @@ export default function CafeDetail() {
   const [editProductPrice, setEditProductPrice] = useState('');
   const [editProductImageUrl, setEditProductImageUrl] = useState('');
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [isEditUploading, setIsEditUploading] = useState(false);
 
   // --- YENİ: TASARIM AYARLARI STATE VE FONKSİYONU ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -200,6 +204,55 @@ export default function CafeDetail() {
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
+    }
+  };
+
+  const handleUploadImage = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (type === 'add') {
+      setIsAddUploading(true);
+    } else {
+      setIsEditUploading(true);
+    }
+
+    try {
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!anonKey || anonKey === 'your_supabase_anon_key_here') {
+        throw new Error("Lütfen qr-menu-ui/.env dosyasındaki VITE_SUPABASE_ANON_KEY değerini Supabase panelinden aldığınız anon key ile güncelleyin!");
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('menu-images')
+        .upload(filePath, file);
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(filePath);
+
+      if (type === 'add') {
+        setProductImageUrl(publicUrl);
+      } else {
+        setEditProductImageUrl(publicUrl);
+      }
+    } catch (error) {
+      console.error("Görsel yükleme hatası:", error);
+      alert("Görsel yüklenirken bir hata oluştu: " + error.message);
+    } finally {
+      if (type === 'add') {
+        setIsAddUploading(false);
+      } else {
+        setIsEditUploading(false);
+      }
     }
   };
 
@@ -482,10 +535,43 @@ export default function CafeDetail() {
                       <textarea value={productDescription} onChange={(e) => setProductDescription(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="İçindekiler vb."></textarea>
                     </div>
                     <div className="mb-6">
-                      <label className="block text-sm text-slate-400 mb-1">Görsel Linki (İsteğe Bağlı)</label>
-                      <input type="text" value={productImageUrl} onChange={(e) => setProductImageUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" placeholder="https://..." />
+                      <label className="block text-sm text-slate-400 mb-1">Görsel (İsteğe Bağlı)</label>
+                      <div className="flex flex-col gap-2">
+                        {productImageUrl ? (
+                          <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-2">
+                            <img src={productImageUrl} alt="Önizleme" className="w-12 h-12 object-cover rounded" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-slate-400 truncate">{productImageUrl}</p>
+                            </div>
+                            <button 
+                              type="button" 
+                              onClick={() => setProductImageUrl('')} 
+                              className="text-red-400 hover:text-red-300 text-xs font-bold px-2 py-1"
+                            >
+                              Sil
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <input 
+                              type="file" 
+                              id="add-product-image-file" 
+                              accept="image/*" 
+                              onChange={(e) => handleUploadImage(e, 'add')} 
+                              className="hidden" 
+                              disabled={isAddUploading}
+                            />
+                            <label 
+                              htmlFor="add-product-image-file" 
+                              className={`flex items-center justify-center gap-2 border border-dashed border-slate-600 rounded-lg p-3 cursor-pointer hover:border-emerald-500 hover:bg-slate-800 transition-all ${isAddUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              <span>{isAddUploading ? '⏳ Yükleniyor...' : '📸 Görsel Seç'}</span>
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded font-bold text-white transition-colors">
+                    <button type="submit" disabled={isAddUploading} className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       Listeye Ekle
                     </button>
                   </form>
@@ -684,21 +770,49 @@ export default function CafeDetail() {
                   ></textarea>
                 </div>
                 <div className="mb-6">
-                  <label className="block text-sm text-slate-400 mb-1 font-medium">Görsel Linki</label>
-                  <input 
-                    type="text" 
-                    value={editProductImageUrl} 
-                    onChange={(e) => setEditProductImageUrl(e.target.value)} 
-                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
-                  />
+                  <label className="block text-sm text-slate-400 mb-1 font-medium">Görsel</label>
+                  <div className="flex flex-col gap-2">
+                    {editProductImageUrl ? (
+                      <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-3">
+                        <img src={editProductImageUrl} alt="Önizleme" className="w-14 h-14 object-cover rounded" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-400 truncate">{editProductImageUrl}</p>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={() => setEditProductImageUrl('')} 
+                          className="text-red-400 hover:text-red-300 text-xs font-bold px-2 py-1"
+                        >
+                          Sil
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input 
+                          type="file" 
+                          id="edit-product-image-file" 
+                          accept="image/*" 
+                          onChange={(e) => handleUploadImage(e, 'edit')} 
+                          className="hidden" 
+                          disabled={isEditUploading}
+                        />
+                        <label 
+                          htmlFor="edit-product-image-file" 
+                          className={`flex items-center justify-center gap-2 border border-dashed border-slate-600 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:bg-slate-800 transition-all ${isEditUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <span>{isEditUploading ? '⏳ Yükleniyor...' : '📸 Görsel Seç'}</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setIsEditProductModalOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
                   <button 
                     type="submit" 
-                    disabled={isSavingProduct}
-                    className={`bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50 transition-all ${isSavingProduct ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isSavingProduct || isEditUploading}
+                    className={`bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50 transition-all ${(isSavingProduct || isEditUploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {isSavingProduct ? 'Güncelleniyor...' : 'Güncelle'}
                   </button>
