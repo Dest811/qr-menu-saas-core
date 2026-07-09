@@ -173,12 +173,12 @@ app.get('/api/cafes/domain/:domainName', async (req, res) => {
 
 // 5. Yeni kafe ekleme (POST) - [KORUMALI]
 app.post('/api/cafes', verifyToken, async (req, res) => {
-  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english } = req.body;
+  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english, campaign_text, campaign_text_en } = req.body;
   const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
   const finalMapsUrl = maps_url !== undefined ? maps_url : req.body.Maps_url;
   try {
     const newCafe = await pool.query(
-      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *',
+      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english, campaign_text, campaign_text_en) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *',
       [
         name, 
         slug, 
@@ -193,7 +193,9 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
         finalMapsUrl || null,
         instagram_url || null,
         phone_number || null,
-        has_english !== undefined ? has_english : false
+        has_english !== undefined ? has_english : false,
+        campaign_text || null,
+        campaign_text_en || null
       ]
     );
     res.json(newCafe.rows[0]);
@@ -207,7 +209,7 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
 app.put('/api/cafes/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english } = req.body;
+    const { hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english, campaign_text, campaign_text_en } = req.body;
     const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
     const finalMapsUrl = maps_url !== undefined ? maps_url : req.body.Maps_url;
     
@@ -216,7 +218,7 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
     console.log("Çözümlenen coverImage:", coverImage);
 
     const updateCafe = await pool.query(
-      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11 WHERE id = $12 RETURNING *',
+      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11, campaign_text = $12, campaign_text_en = $13 WHERE id = $14 RETURNING *',
       [
         hero_image || null, 
         coverImage || null, 
@@ -229,6 +231,8 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
         instagram_url || null,
         phone_number || null,
         has_english !== undefined ? has_english : false,
+        campaign_text || null,
+        campaign_text_en || null,
         id
       ]
     );

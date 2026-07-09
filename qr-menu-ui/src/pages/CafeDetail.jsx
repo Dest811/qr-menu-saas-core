@@ -56,9 +56,12 @@ export default function CafeDetail() {
     maps_url: '',
     instagram_url: '',
     phone_number: '',
-    has_english: false
+    has_english: false,
+    campaign_text: '',
+    campaign_text_en: ''
   });
   const [showExtraInfo, setShowExtraInfo] = useState(false);
+  const [showCampaign, setShowCampaign] = useState(false);
 
   const getHeaders = (extra = {}) => {
     const token = localStorage.getItem('adminToken');
@@ -97,10 +100,15 @@ export default function CafeDetail() {
           maps_url: data.maps_url || '',
           instagram_url: data.instagram_url || '',
           phone_number: data.phone_number || '',
-          has_english: data.has_english || false
+          has_english: data.has_english || false,
+          campaign_text: data.campaign_text || '',
+          campaign_text_en: data.campaign_text_en || ''
         });
         if (data.working_hours || data.maps_url || data.instagram_url || data.phone_number) {
           setShowExtraInfo(true);
+        }
+        if (data.campaign_text || data.campaign_text_en) {
+          setShowCampaign(true);
         }
       }
     } catch (error) {
@@ -123,7 +131,9 @@ export default function CafeDetail() {
         maps_url: branding.maps_url || '',
         instagram_url: branding.instagram_url || '',
         phone_number: branding.phone_number || '',
-        has_english: branding.has_english || false
+        has_english: branding.has_english || false,
+        campaign_text: branding.campaign_text || '',
+        campaign_text_en: branding.campaign_text_en || ''
       };
 
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
@@ -831,6 +841,58 @@ export default function CafeDetail() {
                     </span>
                   </label>
                 </div>
+
+                {/* Kampanya Bannerı Toggle */}
+                <div className="border-t border-slate-700/50 pt-4 mt-4">
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={showCampaign}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setShowCampaign(checked);
+                        if (!checked) {
+                          setBranding(prev => ({
+                            ...prev,
+                            campaign_text: '',
+                            campaign_text_en: ''
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      🎉 Kampanya Bannerı Ekle
+                    </span>
+                  </label>
+                </div>
+
+                {/* Koşullu Kampanya Girişleri */}
+                {showCampaign && (
+                  <div className="mt-4 p-4 rounded-xl bg-slate-900/40 border border-slate-700/50 space-y-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Kampanya Metni (TR)</label>
+                      <input 
+                        type="text" 
+                        value={branding.campaign_text || ''}
+                        onChange={(e) => setBranding({...branding, campaign_text: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                        placeholder="Örn: Kahve + Tatlı Menüsü Sadece 150₺!"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Kampanya Metni (EN)</label>
+                      <input 
+                        type="text" 
+                        value={branding.campaign_text_en || ''}
+                        onChange={(e) => setBranding({...branding, campaign_text_en: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                        placeholder="Örn: Coffee + Dessert Menu Only 150!"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Koşullu Açılır Alan */}
                 {showExtraInfo && (

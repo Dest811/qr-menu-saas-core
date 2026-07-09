@@ -179,6 +179,18 @@ export default function Menu() {
         </div>
       </header>
 
+      {/* KAMPANYA BANNERI (Opsiyonel - Degrade ve Bounce/Pulse Animasyonlu Premium Kapsül) */}
+      {cafe && cafe.campaign_text && cafe.campaign_text.trim() !== '' && (
+        <div className="max-w-xl mx-auto px-5 mt-4">
+          <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-bold text-center p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 animate-pulse border border-white/10">
+            <span className="text-xl select-none animate-bounce">🎁</span>
+            <span className="text-sm tracking-wide drop-shadow-md">
+              {lang === 'en' && cafe.campaign_text_en ? cafe.campaign_text_en : cafe.campaign_text}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* STICKY KATEGORİ BAR */}
       <nav 
         className="sticky top-0 z-40 backdrop-blur-md border-b shadow-sm transition-all duration-500" 
