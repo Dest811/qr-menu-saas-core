@@ -211,6 +211,22 @@ export default function CafeDetail() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // 1. MIME-Type Kontrolü (Sadece JPEG, PNG ve WebP)
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      alert("Lütfen sadece JPEG, PNG veya WebP formatında bir görsel seçin.");
+      e.target.value = ''; // Inputu temizle
+      return;
+    }
+
+    // 2. Dosya Boyutu Kontrolü (5 MB)
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      alert("Görsel boyutu 5MB'tan büyük olamaz. Lütfen TinyPNG ile sıkıştırıp tekrar deneyin.");
+      e.target.value = ''; // Inputu temizle
+      return;
+    }
+
     if (type === 'add') {
       setIsAddUploading(true);
     } else {
@@ -218,11 +234,6 @@ export default function CafeDetail() {
     }
 
     try {
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!anonKey || anonKey === 'your_supabase_anon_key_here') {
-        throw new Error("Lütfen qr-menu-ui/.env dosyasındaki VITE_SUPABASE_ANON_KEY değerini Supabase panelinden aldığınız anon key ile güncelleyin!");
-      }
-
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `products/${fileName}`;
