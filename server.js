@@ -173,12 +173,12 @@ app.get('/api/cafes/domain/:domainName', async (req, res) => {
 
 // 5. Yeni kafe ekleme (POST) - [KORUMALI]
 app.post('/api/cafes', verifyToken, async (req, res) => {
-  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number } = req.body;
+  const { name, slug, logo_url, hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english } = req.body;
   const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
   const finalMapsUrl = maps_url !== undefined ? maps_url : req.body.Maps_url;
   try {
     const newCafe = await pool.query(
-      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
+      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *',
       [
         name, 
         slug, 
@@ -192,7 +192,8 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
         working_hours || null,
         finalMapsUrl || null,
         instagram_url || null,
-        phone_number || null
+        phone_number || null,
+        has_english !== undefined ? has_english : false
       ]
     );
     res.json(newCafe.rows[0]);
@@ -206,7 +207,7 @@ app.post('/api/cafes', verifyToken, async (req, res) => {
 app.put('/api/cafes/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number } = req.body;
+    const { hero_image, primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english } = req.body;
     const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
     const finalMapsUrl = maps_url !== undefined ? maps_url : req.body.Maps_url;
     
@@ -215,7 +216,7 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
     console.log("Çözümlenen coverImage:", coverImage);
 
     const updateCafe = await pool.query(
-      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10 WHERE id = $11 RETURNING *',
+      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11 WHERE id = $12 RETURNING *',
       [
         hero_image || null, 
         coverImage || null, 
@@ -227,6 +228,7 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
         finalMapsUrl || null,
         instagram_url || null,
         phone_number || null,
+        has_english !== undefined ? has_english : false,
         id
       ]
     );
@@ -273,10 +275,10 @@ app.get('/api/categories/:cafeId', async (req, res) => {
 // 2. Yeni kategori ekle (POST) - [KORUMALI]
 app.post('/api/categories', verifyToken, async (req, res) => {
   try {
-    const { cafe_id, name, order_index } = req.body;
+    const { cafe_id, name, name_en, order_index } = req.body;
     const newCategory = await pool.query(
-      'INSERT INTO categories (cafe_id, name, order_index) VALUES ($1, $2, $3) RETURNING *',
-      [cafe_id, name, order_index || 0]
+      'INSERT INTO categories (cafe_id, name, name_en, order_index) VALUES ($1, $2, $3, $4) RETURNING *',
+      [cafe_id, name, name_en || null, order_index || 0]
     );
     res.json(newCategory.rows[0]);
   } catch (err) {
@@ -319,12 +321,12 @@ app.get('/api/products/:categoryId', async (req, res) => {
 // 2. Yeni ürün ekle (POST) - [KORUMALI]
 app.post('/api/products', verifyToken, async (req, res) => {
   try {
-    const { category_id, name, description, price, image_url, is_active } = req.body;
+    const { category_id, name, name_en, description, description_en, price, image_url, is_active } = req.body;
     const activeStatus = is_active !== undefined ? is_active : true;
 
     const newProduct = await pool.query(
-      'INSERT INTO products (category_id, name, description, price, image_url, is_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [category_id, name, description || null, price, image_url || null, activeStatus]
+      'INSERT INTO products (category_id, name, name_en, description, description_en, price, image_url, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [category_id, name, name_en || null, description || null, description_en || null, price, image_url || null, activeStatus]
     );
     res.json(newProduct.rows[0]);
   } catch (err) {
@@ -369,20 +371,19 @@ app.put('/api/products/:id', verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Geçersiz ürün kimliği." });
     }
 
-    const { name, description, price, image_url, is_active } = req.body;
+    const { name, name_en, description, description_en, price, image_url, is_active } = req.body;
 
     if (!name || price === undefined || isNaN(parseFloat(price))) {
       return res.status(400).json({ error: "Ürün adı ve geçerli bir fiyat zorunludur." });
     }
 
-    // Basit ve temiz güncelleme sorgusu (is_active isteğe bağlı)
     let query, params;
     if (is_active !== undefined) {
-      query = 'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, is_active = $5 WHERE id = $6 RETURNING *';
-      params = [name, description || null, parseFloat(price), image_url || null, is_active, productId];
+      query = 'UPDATE products SET name = $1, name_en = $2, description = $3, description_en = $4, price = $5, image_url = $6, is_active = $7 WHERE id = $8 RETURNING *';
+      params = [name, name_en || null, description || null, description_en || null, parseFloat(price), image_url || null, is_active, productId];
     } else {
-      query = 'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 RETURNING *';
-      params = [name, description || null, parseFloat(price), image_url || null, productId];
+      query = 'UPDATE products SET name = $1, name_en = $2, description = $3, description_en = $4, price = $5, image_url = $6 WHERE id = $7 RETURNING *';
+      params = [name, name_en || null, description || null, description_en || null, parseFloat(price), image_url || null, productId];
     }
 
     const updatedProduct = await pool.query(query, params);

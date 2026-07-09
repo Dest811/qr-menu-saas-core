@@ -15,6 +15,7 @@ export default function Menu() {
 
   // YENİ: Detay modalını kontrol edecek state'ler
   const [selectedProductDetail, setSelectedProductDetail] = useState(null); // Hangi ürünün detayı açık?
+  const [lang, setLang] = useState('tr'); // Dil Seçimi (tr veya en)
 
   const categoryRefs = useRef({});
 
@@ -156,6 +157,16 @@ export default function Menu() {
           </a>
         )}
         
+        {/* Dil Değiştirme Butonu (Opsiyonel - Sağ Üst Köşeye Sabitlenmiş Şık Kapsül) */}
+        {cafe && cafe.has_english && (
+          <button 
+            onClick={() => setLang(prev => prev === 'tr' ? 'en' : 'tr')}
+            className="absolute top-4 right-4 z-20 flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10"
+          >
+            <span>{lang === 'tr' ? '🇬🇧 EN' : '🇹🇷 TR'}</span>
+          </button>
+        )}
+        
         <div className="relative z-10 max-w-lg mx-auto">
           <h1 className="text-5xl font-extrabold text-white tracking-tight mb-3 font-serif drop-shadow-md">
             {cafe.name}
@@ -186,7 +197,7 @@ export default function Menu() {
                 }}
                 className="whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 shadow-sm"
               >
-                {category.name}
+                {lang === 'en' && category.name_en ? category.name_en : category.name}
               </button>
             ))}
           </div>
@@ -206,7 +217,7 @@ export default function Menu() {
             >
               <div className="flex items-center mb-6">
                 <h2 className="text-2xl font-bold font-serif pr-4 transition-colors duration-500" style={{ color: primaryColor }}>
-                  {category.name}
+                  {lang === 'en' && category.name_en ? category.name_en : category.name}
                 </h2>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-slate-300 to-transparent"></div>
               </div>
@@ -225,7 +236,7 @@ export default function Menu() {
                       <div className="flex-1 flex flex-col justify-center py-2 pl-2">
                         <div className="flex justify-between items-start mb-1 gap-2">
                           <h3 className={`font-bold text-[17px] leading-tight ${!product.is_active ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                            {product.name}
+                             {lang === 'en' && product.name_en ? product.name_en : product.name}
                           </h3>
                           {product.is_active ? (
                             <span 
@@ -240,9 +251,9 @@ export default function Menu() {
                             </span>
                           )}
                         </div>
-                        {product.description && (
+                         {(lang === 'en' && product.description_en ? product.description_en : product.description) && (
                           <p className="text-[13px] text-slate-500 leading-snug line-clamp-2 mt-1 pr-2">
-                            {product.description}
+                            {lang === 'en' && product.description_en ? product.description_en : product.description}
                           </p>
                         )}
                       </div>
@@ -361,7 +372,7 @@ export default function Menu() {
                   className="text-2xl font-bold leading-tight tracking-tight break-words" 
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
-                  {selectedProductDetail.name}
+                   {lang === 'en' && selectedProductDetail.name_en ? selectedProductDetail.name_en : selectedProductDetail.name}
                 </h1>
                 
                 <p className="text-2xl font-black shrink-0 drop-shadow-md" style={{ color: accentColor }}>
@@ -369,11 +380,11 @@ export default function Menu() {
                 </p>
               </div>
               
-              {/* SADECE SENİN GİRDİĞİN AÇIKLAMA (Esnek ve Dinamik) */}
-              {selectedProductDetail.description && (
+               {/* SADECE SENİN GİRDİĞİN AÇIKLAMA (Esnek ve Dinamik) */}
+              {(lang === 'en' && selectedProductDetail.description_en ? selectedProductDetail.description_en : selectedProductDetail.description) && (
                 <div className="border-t border-white/20 pt-5 mt-2">
                   <p className="text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words">
-                    {selectedProductDetail.description}
+                    {lang === 'en' && selectedProductDetail.description_en ? selectedProductDetail.description_en : selectedProductDetail.description}
                   </p>
                 </div>
               )}
