@@ -153,7 +153,7 @@ export default function Menu() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>Yol Tarifi Al</span>
+            <span>{lang === 'en' ? 'Get Directions' : 'Yol Tarifi Al'}</span>
           </a>
         )}
         
@@ -173,7 +173,7 @@ export default function Menu() {
           </h1>
           <p className="text-sm font-medium tracking-widest uppercase flex items-center justify-center gap-2 drop-shadow-sm transition-colors duration-500" style={{ color: accentColor }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
-            Dijital Menü
+            {lang === 'en' ? 'Digital Menu' : 'Dijital Menü'}
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
           </p>
         </div>
@@ -207,7 +207,7 @@ export default function Menu() {
       {/* MENÜ İÇERİĞİ */}
       <main className="max-w-xl mx-auto p-5 mt-4 space-y-12">
         {categories.length === 0 ? (
-          <p className="text-center text-slate-400 mt-10 text-sm">Menü çok yakında eklenecektir.</p>
+          <p className="text-center text-slate-400 mt-10 text-sm">{lang === 'en' ? 'The menu will be available soon.' : 'Menü çok yakında eklenecektir.'}</p>
         ) : (
           categories.map(category => (
             <section 
@@ -225,7 +225,7 @@ export default function Menu() {
               {/* ÜRÜN KARTLARI */}
               <div className="space-y-4">
                 {productsByCategory[category.id]?.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">Bu kategoride henüz ürün yok.</p>
+                  <p className="text-xs text-slate-400 italic">{lang === 'en' ? 'No products in this category yet.' : 'Bu kategoride henüz ürün yok.'}</p>
                 ) : (
                   productsByCategory[category.id]?.map(product => (
                     <div 
@@ -247,7 +247,7 @@ export default function Menu() {
                             </span>
                           ) : (
                             <span className="font-bold text-red-700 bg-red-50 px-2 py-1 rounded-xl text-xs shrink-0 border border-red-100">
-                              TÜKENDİ
+                              {lang === 'en' ? 'SOLD OUT' : 'TÜKENDİ'}
                             </span>
                           )}
                         </div>
@@ -289,7 +289,7 @@ export default function Menu() {
           {cafe.working_hours && cafe.working_hours.trim() !== '' && (
             <div className="flex items-center gap-1.5 text-slate-500 text-sm">
               <span className="text-base select-none">🕒</span>
-              <span>Çalışma Saatleri: {cafe.working_hours}</span>
+              <span>{lang === 'en' ? 'Working Hours:' : 'Çalışma Saatleri:'} {cafe.working_hours}</span>
             </div>
           )}
 
@@ -300,7 +300,7 @@ export default function Menu() {
               style={{ color: primaryColor }}
             >
               <span className="text-base select-none">📞</span>
-              <span>İletişim: {cafe.phone_number}</span>
+              <span>{lang === 'en' ? 'Contact:' : 'İletişim:'} {cafe.phone_number}</span>
             </a>
           )}
 
