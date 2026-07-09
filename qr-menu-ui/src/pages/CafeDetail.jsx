@@ -48,7 +48,9 @@ export default function CafeDetail() {
     bg_color: '#F9F7F2',
     custom_domain: '',
     working_hours: '',
-    maps_url: ''
+    maps_url: '',
+    instagram_url: '',
+    phone_number: ''
   });
   const [showExtraInfo, setShowExtraInfo] = useState(false);
 
@@ -86,9 +88,11 @@ export default function CafeDetail() {
           bg_color: data.bg_color || '#F9F7F2',
           custom_domain: data.custom_domain || '',
           working_hours: data.working_hours || '',
-          maps_url: data.maps_url || ''
+          maps_url: data.maps_url || '',
+          instagram_url: data.instagram_url || '',
+          phone_number: data.phone_number || ''
         });
-        if (data.working_hours || data.maps_url) {
+        if (data.working_hours || data.maps_url || data.instagram_url || data.phone_number) {
           setShowExtraInfo(true);
         }
       }
@@ -109,7 +113,9 @@ export default function CafeDetail() {
         bg_color: branding.bg_color,
         custom_domain: branding.custom_domain,
         working_hours: branding.working_hours || '',
-        maps_url: branding.maps_url || ''
+        maps_url: branding.maps_url || '',
+        instagram_url: branding.instagram_url || '',
+        phone_number: branding.phone_number || ''
       };
 
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
@@ -741,7 +747,7 @@ export default function CafeDetail() {
                   <p className="text-xs text-slate-500 mt-1">Kafenin kendi özel alan adı (White-label).</p>
                 </div>
 
-                {/* Mekan Konumu ve Çalışma Saatleri Ekle Toggle */}
+                {/* İletişim ve Ekstra Bilgiler Ekle Toggle */}
                 <div className="border-t border-slate-700/50 pt-4 mt-4">
                   <label className="flex items-center gap-3 cursor-pointer select-none group">
                     <input 
@@ -754,14 +760,16 @@ export default function CafeDetail() {
                           setBranding(prev => ({
                             ...prev,
                             working_hours: '',
-                            maps_url: ''
+                            maps_url: '',
+                            instagram_url: '',
+                            phone_number: ''
                           }));
                         }
                       }}
                       className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
                     />
                     <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
-                      Mekan Konumu ve Çalışma Saatleri Ekle
+                      İletişim ve Ekstra Bilgiler Ekle
                     </span>
                   </label>
                 </div>
@@ -769,20 +777,32 @@ export default function CafeDetail() {
                 {/* Koşullu Açılır Alan */}
                 {showExtraInfo && (
                   <div className="mt-4 p-4 rounded-xl bg-slate-900/40 border border-slate-700/50 space-y-4">
-                    <div>
-                      <label className="block text-slate-400 mb-1 text-xs font-medium">Çalışma Saatleri (İsteğe Bağlı)</label>
-                      <input 
-                        type="text" 
-                        value={branding.working_hours || ''}
-                        onChange={(e) => setBranding({...branding, working_hours: e.target.value})}
-                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
-                        placeholder="Örn: 09:00 - 23:00"
-                      />
-                      <p className="text-[10px] text-slate-500 mt-1">Müşteri menüsünde saat ikonu ile gösterilecek çalışma aralığı.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-slate-400 mb-1 text-xs font-medium">Çalışma Saatleri</label>
+                        <input 
+                          type="text" 
+                          value={branding.working_hours || ''}
+                          onChange={(e) => setBranding({...branding, working_hours: e.target.value})}
+                          className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                          placeholder="Örn: 09:00 - 23:00"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-400 mb-1 text-xs font-medium">Telefon Numarası</label>
+                        <input 
+                          type="text" 
+                          value={branding.phone_number || ''}
+                          onChange={(e) => setBranding({...branding, phone_number: e.target.value})}
+                          className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                          placeholder="Örn: 0212 345 67 89"
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-slate-400 mb-1 text-xs font-medium">Google Maps Linki (İsteğe Bağlı)</label>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Google Maps Linki</label>
                       <input 
                         type="text" 
                         value={branding.maps_url || ''}
@@ -790,7 +810,17 @@ export default function CafeDetail() {
                         className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
                         placeholder="Örn: https://maps.app.goo.gl/..."
                       />
-                      <p className="text-[10px] text-slate-500 mt-1">Müşteri menüsünde harita pini ile 'Yol Tarifi Al' linki oluşturur.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Instagram Linki</label>
+                      <input 
+                        type="text" 
+                        value={branding.instagram_url || ''}
+                        onChange={(e) => setBranding({...branding, instagram_url: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                        placeholder="Örn: https://instagram.com/hesapadi"
+                      />
                     </div>
                   </div>
                 )}

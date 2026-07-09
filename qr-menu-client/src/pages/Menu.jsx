@@ -165,14 +165,6 @@ export default function Menu() {
             Dijital Menü
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
           </p>
-
-          {/* Çalışma Saatleri (Opsiyonel) */}
-          {cafe.working_hours && cafe.working_hours.trim() !== '' && (
-            <div className="mt-4 flex justify-center items-center gap-1.5 text-white text-xs bg-black/30 backdrop-blur-sm py-2 px-4 rounded-2xl w-fit mx-auto border border-white/10 shadow-inner">
-              <span className="text-sm select-none">🕒</span>
-              <span className="font-medium">{cafe.working_hours}</span>
-            </div>
-          )}
         </div>
       </header>
 
@@ -274,6 +266,52 @@ export default function Menu() {
           ))
         )}
       </main>
+
+      {/* FOOTER ALANI (Opsiyonel - İletişim ve Çalışma Saatleri) */}
+      {((cafe.working_hours && cafe.working_hours.trim() !== '') || 
+        (cafe.phone_number && cafe.phone_number.trim() !== '') || 
+        (cafe.instagram_url && cafe.instagram_url.trim() !== '')) && (
+        <footer 
+          className="w-full border-t border-slate-200 mt-12 py-8 flex flex-col items-center gap-4 text-center px-6"
+          style={{ borderColor: `${primaryColor}15` }}
+        >
+          {cafe.working_hours && cafe.working_hours.trim() !== '' && (
+            <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+              <span className="text-base select-none">🕒</span>
+              <span>Çalışma Saatleri: {cafe.working_hours}</span>
+            </div>
+          )}
+
+          {cafe.phone_number && cafe.phone_number.trim() !== '' && (
+            <a 
+              href={`tel:${cafe.phone_number.replace(/\s+/g, '')}`}
+              className="flex items-center gap-1.5 text-slate-600 hover:opacity-80 transition-opacity text-sm font-medium"
+              style={{ color: primaryColor }}
+            >
+              <span className="text-base select-none">📞</span>
+              <span>İletişim: {cafe.phone_number}</span>
+            </a>
+          )}
+
+          {cafe.instagram_url && cafe.instagram_url.trim() !== '' && (
+            <a 
+              href={cafe.instagram_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:opacity-85 transition-opacity text-sm font-semibold"
+              style={{ color: primaryColor }}
+            >
+              {/* Minimalist Instagram SVG */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ stroke: primaryColor }}>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" strokeWidth={2} />
+                <path strokeWidth={2} d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" strokeWidth={3} strokeLinecap="round" />
+              </svg>
+              <span>Instagram</span>
+            </a>
+          )}
+        </footer>
+      )}
 
 {/* --- YENİ: TASARIMLI VE ANİMASYONLU ÜRÜN DETAY MODALI --- */}
       {selectedProductDetail && (
