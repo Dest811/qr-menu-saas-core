@@ -88,17 +88,14 @@ export default function CafeDetail() {
           working_hours: data.working_hours || '',
           maps_url: data.maps_url || ''
         });
+        if (data.working_hours || data.maps_url) {
+          setShowExtraInfo(true);
+        }
       }
     } catch (error) {
       console.error("Error fetching cafe details:", error);
     }
   };
-
-  useEffect(() => {
-    if (isSettingsOpen) {
-      setShowExtraInfo(!!(branding.working_hours || branding.maps_url));
-    }
-  }, [isSettingsOpen]);
 
   const handleUpdateBranding = async (e) => {
     e.preventDefault();
