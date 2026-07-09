@@ -140,6 +140,22 @@ export default function Menu() {
         <div className="absolute inset-0 opacity-75 mix-blend-multiply transition-colors duration-500" style={{ backgroundColor: primaryColor }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
         
+        {/* Yol Tarifi Al (Opsiyonel - Sol Üst Köşeye Sabitlenmiş Şık Kapsül) */}
+        {cafe.maps_url && cafe.maps_url.trim() !== '' && (
+          <a 
+            href={cafe.maps_url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="absolute top-4 left-4 z-20 flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Yol Tarifi Al</span>
+          </a>
+        )}
+        
         <div className="relative z-10 max-w-lg mx-auto">
           <h1 className="text-5xl font-extrabold text-white tracking-tight mb-3 font-serif drop-shadow-md">
             {cafe.name}
@@ -150,29 +166,11 @@ export default function Menu() {
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
           </p>
 
-          {/* Çalışma Saatleri & Konum Bilgisi (Opsiyonel) */}
-          {((cafe.working_hours && cafe.working_hours.trim() !== '') || (cafe.maps_url && cafe.maps_url.trim() !== '')) && (
-            <div className="mt-4 flex flex-wrap justify-center items-center gap-4 text-white text-xs bg-black/30 backdrop-blur-sm py-2 px-4 rounded-2xl w-fit mx-auto border border-white/10 shadow-inner">
-              {cafe.working_hours && cafe.working_hours.trim() !== '' && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm select-none">🕒</span>
-                  <span className="font-medium">{cafe.working_hours}</span>
-                </div>
-              )}
-              {cafe.working_hours && cafe.working_hours.trim() !== '' && cafe.maps_url && cafe.maps_url.trim() !== '' && (
-                <span className="h-3 w-[1px] bg-white/20 hidden sm:inline-block"></span>
-              )}
-              {cafe.maps_url && cafe.maps_url.trim() !== '' && (
-                <a 
-                  href={cafe.maps_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-1.5 text-white hover:opacity-85 transition-opacity underline decoration-dotted underline-offset-4 font-semibold"
-                >
-                  <span className="text-sm select-none">📍</span>
-                  <span>Yol Tarifi Al</span>
-                </a>
-              )}
+          {/* Çalışma Saatleri (Opsiyonel) */}
+          {cafe.working_hours && cafe.working_hours.trim() !== '' && (
+            <div className="mt-4 flex justify-center items-center gap-1.5 text-white text-xs bg-black/30 backdrop-blur-sm py-2 px-4 rounded-2xl w-fit mx-auto border border-white/10 shadow-inner">
+              <span className="text-sm select-none">🕒</span>
+              <span className="font-medium">{cafe.working_hours}</span>
             </div>
           )}
         </div>
