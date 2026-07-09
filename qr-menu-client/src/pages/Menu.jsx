@@ -149,6 +149,32 @@ export default function Menu() {
             Dijital Menü
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
           </p>
+
+          {/* Çalışma Saatleri & Konum Bilgisi (Opsiyonel) */}
+          {((cafe.working_hours && cafe.working_hours.trim() !== '') || (cafe.maps_url && cafe.maps_url.trim() !== '')) && (
+            <div className="mt-4 flex flex-wrap justify-center items-center gap-4 text-white text-xs bg-black/30 backdrop-blur-sm py-2 px-4 rounded-2xl w-fit mx-auto border border-white/10 shadow-inner">
+              {cafe.working_hours && cafe.working_hours.trim() !== '' && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm select-none">🕒</span>
+                  <span className="font-medium">{cafe.working_hours}</span>
+                </div>
+              )}
+              {cafe.working_hours && cafe.working_hours.trim() !== '' && cafe.maps_url && cafe.maps_url.trim() !== '' && (
+                <span className="h-3 w-[1px] bg-white/20 hidden sm:inline-block"></span>
+              )}
+              {cafe.maps_url && cafe.maps_url.trim() !== '' && (
+                <a 
+                  href={cafe.maps_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-1.5 text-white hover:opacity-85 transition-opacity underline decoration-dotted underline-offset-4 font-semibold"
+                >
+                  <span className="text-sm select-none">📍</span>
+                  <span>Yol Tarifi Al</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

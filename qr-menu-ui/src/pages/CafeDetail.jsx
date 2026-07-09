@@ -46,8 +46,11 @@ export default function CafeDetail() {
     primary_color: '#1A3626',
     accent_color: '#D4AF37',
     bg_color: '#F9F7F2',
-    custom_domain: ''
+    custom_domain: '',
+    working_hours: '',
+    maps_url: ''
   });
+  const [showExtraInfo, setShowExtraInfo] = useState(false);
 
   const getHeaders = (extra = {}) => {
     const token = localStorage.getItem('adminToken');
@@ -81,13 +84,21 @@ export default function CafeDetail() {
           primary_color: data.primary_color || '#1A3626',
           accent_color: data.accent_color || '#D4AF37',
           bg_color: data.bg_color || '#F9F7F2',
-          custom_domain: data.custom_domain || ''
+          custom_domain: data.custom_domain || '',
+          working_hours: data.working_hours || '',
+          maps_url: data.maps_url || ''
         });
       }
     } catch (error) {
       console.error("Error fetching cafe details:", error);
     }
   };
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      setShowExtraInfo(!!(branding.working_hours || branding.maps_url));
+    }
+  }, [isSettingsOpen]);
 
   const handleUpdateBranding = async (e) => {
     e.preventDefault();
@@ -99,7 +110,9 @@ export default function CafeDetail() {
         primary_color: branding.primary_color,
         accent_color: branding.accent_color,
         bg_color: branding.bg_color,
-        custom_domain: branding.custom_domain
+        custom_domain: branding.custom_domain,
+        working_hours: branding.working_hours || '',
+        maps_url: branding.maps_url || ''
       };
 
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
@@ -648,7 +661,7 @@ export default function CafeDetail() {
         {/* TASARIM AYARLARI MODALI (YENİ) */}
         {isSettingsOpen && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl">
+            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">🎨 Renk & Görsel Ayarları</h2>
                 <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
@@ -719,7 +732,7 @@ export default function CafeDetail() {
                   </div>
                 </div>
 
-                <div className="mb-8">
+                <div className="mb-4">
                   <label className="block text-slate-400 mb-1 text-sm font-medium">Özel Alan Adı (Custom Domain)</label>
                   <input 
                     type="text" 
@@ -730,6 +743,60 @@ export default function CafeDetail() {
                   />
                   <p className="text-xs text-slate-500 mt-1">Kafenin kendi özel alan adı (White-label).</p>
                 </div>
+
+                {/* Mekan Konumu ve Çalışma Saatleri Ekle Toggle */}
+                <div className="border-t border-slate-700/50 pt-4 mt-4">
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={showExtraInfo}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setShowExtraInfo(checked);
+                        if (!checked) {
+                          setBranding(prev => ({
+                            ...prev,
+                            working_hours: '',
+                            maps_url: ''
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Mekan Konumu ve Çalışma Saatleri Ekle
+                    </span>
+                  </label>
+                </div>
+
+                {/* Koşullu Açılır Alan */}
+                {showExtraInfo && (
+                  <div className="mt-4 p-4 rounded-xl bg-slate-900/40 border border-slate-700/50 space-y-4">
+                    <div>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Çalışma Saatleri (İsteğe Bağlı)</label>
+                      <input 
+                        type="text" 
+                        value={branding.working_hours || ''}
+                        onChange={(e) => setBranding({...branding, working_hours: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                        placeholder="Örn: 09:00 - 23:00"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">Müşteri menüsünde saat ikonu ile gösterilecek çalışma aralığı.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 mb-1 text-xs font-medium">Google Maps Linki (İsteğe Bağlı)</label>
+                      <input 
+                        type="text" 
+                        value={branding.maps_url || ''}
+                        onChange={(e) => setBranding({...branding, maps_url: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
+                        placeholder="Örn: https://maps.app.goo.gl/..."
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">Müşteri menüsünde harita pini ile 'Yol Tarifi Al' linki oluşturur.</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setIsSettingsOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
