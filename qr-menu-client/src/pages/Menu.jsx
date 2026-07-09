@@ -16,6 +16,7 @@ export default function Menu() {
   // YENİ: Detay modalını kontrol edecek state'ler
   const [selectedProductDetail, setSelectedProductDetail] = useState(null); // Hangi ürünün detayı açık?
   const [lang, setLang] = useState('tr'); // Dil Seçimi (tr veya en)
+  const [showCampaignPopup, setShowCampaignPopup] = useState(true); // Kampanya karşılama modalı görünümü
 
   const categoryRefs = useRef({});
 
@@ -178,18 +179,6 @@ export default function Menu() {
           </p>
         </div>
       </header>
-
-      {/* KAMPANYA BANNERI (Opsiyonel - Degrade ve Bounce/Pulse Animasyonlu Premium Kapsül) */}
-      {cafe && cafe.campaign_text && cafe.campaign_text.trim() !== '' && (
-        <div className="max-w-xl mx-auto px-5 mt-4">
-          <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-bold text-center p-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 animate-pulse border border-white/10">
-            <span className="text-xl select-none animate-bounce">🎁</span>
-            <span className="text-sm tracking-wide drop-shadow-md">
-              {lang === 'en' && cafe.campaign_text_en ? cafe.campaign_text_en : cafe.campaign_text}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* STICKY KATEGORİ BAR */}
       <nav 
@@ -401,6 +390,60 @@ export default function Menu() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* KAMPANYA KARŞILAMA POP-UP MODALI */}
+      {cafe && cafe.campaign_text && cafe.campaign_text.trim() !== '' && showCampaignPopup && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm transition-all duration-300"
+          onClick={() => setShowCampaignPopup(false)}
+        >
+          <div 
+            className="relative rounded-3xl border p-8 max-w-sm w-[90%] text-center shadow-2xl transition-all duration-300 animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center gap-4 bg-slate-900 border-slate-700/50"
+            style={{ 
+              backgroundColor: primaryColor ? `${primaryColor}CC` : '#0f172aCC', 
+              borderColor: accentColor ? `${accentColor}30` : '#33415550',
+              backdropFilter: 'blur(15px)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Kapatma Butonu (X) */}
+            <button 
+              onClick={() => setShowCampaignPopup(false)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Dekoratif Kampanya İkonu */}
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-white/10" style={{ color: accentColor || '#D4AF37' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0H4m8 0h8M4 8v11a2 2 0 002 2h12a2 2 0 002-2V8m-18 0h18" />
+              </svg>
+            </div>
+
+            {/* Başlık */}
+            <h3 className="text-lg font-bold text-white tracking-wide uppercase" style={{ color: accentColor || '#D4AF37' }}>
+              {lang === 'en' ? 'Special Offer' : 'Özel Kampanya'}
+            </h3>
+
+            {/* Kampanya Metni */}
+            <p className="text-white text-base font-semibold leading-relaxed drop-shadow-sm mt-1">
+              {lang === 'en' && cafe.campaign_text_en ? cafe.campaign_text_en : cafe.campaign_text}
+            </p>
+
+            {/* Alt Kapatma/Tamam Butonu */}
+            <button
+              onClick={() => setShowCampaignPopup(false)}
+              className="mt-4 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-900 transition-all hover:opacity-90 active:scale-95 shadow-md"
+              style={{ backgroundColor: accentColor || '#D4AF37' }}
+            >
+              {lang === 'en' ? 'Close' : 'Kapat'}
+            </button>
           </div>
         </div>
       )}
