@@ -3,6 +3,19 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+const s3Client = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -417,6 +430,38 @@ app.get('/api/stats', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "İstatistikler yüklenirken hata oluştu." });
+  }
+});
+
+// ==========================================
+// RESİM YÜKLEME ROTASI (CLOUDFLARE R2)
+// ==========================================
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Lütfen bir dosya yükleyin.' });
+    }
+
+    const file = req.file;
+    const fileExt = file.originalname.split('.').pop();
+    const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype || 'image/jpeg',
+    });
+
+    await s3Client.send(command);
+
+    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || '').replace(/\/$/, '');
+    const publicUrl = `${publicDomain}/${fileName}`;
+
+    return res.json({ url: publicUrl, publicUrl: publicUrl });
+  } catch (error) {
+    console.error('R2 Görsel Yükleme Hatası (Backend):', error);
+    return res.status(500).json({ error: 'Görsel yüklenirken sunucu hatası oluştu: ' + error.message });
   }
 });
 

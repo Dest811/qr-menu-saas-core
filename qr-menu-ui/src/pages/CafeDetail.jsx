@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { uploadToR2 } from '../utils/r2-upload';
 
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
@@ -270,7 +269,22 @@ export default function CafeDetail() {
     }
 
     try {
-      const publicUrl = await uploadToR2(file);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Yükleme hatası (${response.status})`);
+      }
+
+      const data = await response.json();
+      const publicUrl = data.url || data.publicUrl;
 
       if (type === 'add') {
         setProductImageUrl(publicUrl);
