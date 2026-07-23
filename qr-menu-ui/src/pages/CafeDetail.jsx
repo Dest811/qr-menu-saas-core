@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { uploadToR2 } from '../utils/r2-upload';
 
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
@@ -270,21 +270,7 @@ export default function CafeDetail() {
     }
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `products/${fileName}`;
-
-      const { data, error } = await supabase.storage
-        .from('menu-images')
-        .upload(filePath, file);
-
-      if (error) {
-        throw error;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('menu-images')
-        .getPublicUrl(filePath);
+      const publicUrl = await uploadToR2(file);
 
       if (type === 'add') {
         setProductImageUrl(publicUrl);
