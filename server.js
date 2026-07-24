@@ -447,7 +447,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
     const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
+      Bucket: process.env.R2_BUCKET_NAME || 'mydigitalmenu-media',
       Key: fileName,
       Body: file.buffer,
       ContentType: file.mimetype || 'image/jpeg',
@@ -455,7 +455,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     await s3Client.send(command);
 
-    const publicDomain = process.env.R2_PUBLIC_DOMAIN.replace(/\/$/, '');
+    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || 'https://pub-6156ea55b2304305a24cfcecaa026166.r2.dev').replace(/\/$/, '');
     const imageUrl = `${publicDomain}/${fileName}`;
 
     return res.status(200).json({
