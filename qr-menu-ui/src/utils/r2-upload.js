@@ -1,45 +1,36 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-
-const s3Client = new S3Client({
-  region: "auto",
-  endpoint: process.env.R2_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  },
-});
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /**
- * Cloudflare R2'ye dosya yükler ve resmin tam Public URL'sini döndürür.
- * @param {File|Buffer|Uint8Array} file - Yüklenecek dosya
- * @param {string} [originalName] - Opsiyonel dosya adı
+ * Frontend R2 Görsel Yükleyici - Güvenli Backend API Üzerinden Yükleme Yapar
+ * @param {File} file - Yüklenecek dosya
  * @returns {Promise<string>} Yüklenen resmin public URL'si
  */
-export async function uploadToR2(file, originalName) {
+export async function uploadToR2(file) {
   try {
-    const rawFileName = originalName || (file && file.name ? file.name : 'image.jpg');
-    const sanitizedName = rawFileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${sanitizedName}`;
+    const formData = new FormData();
+    formData.append('file', file);
 
-    let bodyData = file;
-    if (typeof File !== 'undefined' && file instanceof File) {
-      bodyData = new Uint8Array(await file.arrayBuffer());
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
-      Key: uniqueFileName,
-      Body: bodyData,
-      ContentType: (file && file.type) ? file.type : 'image/jpeg',
+    const response = await fetch(`${API_BASE_URL}/api/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
     });
 
-    await s3Client.send(command);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Yükleme hatası (${response.status})`);
+    }
 
-    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || 'https://pub-6156ea55b2304305a24cfcecaa026166.r2.dev').replace(/\/$/, '');
-    const publicUrl = `${publicDomain}/${uniqueFileName}`;
-    return publicUrl;
+    const data = await response.json();
+    return data.url || data.publicUrl;
   } catch (error) {
-    console.error('R2 Görsel Yükleme Hatası:', error);
+    console.error('Görsel Yükleme Hatası (Frontend API):', error);
     throw error;
   }
 }
