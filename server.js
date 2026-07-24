@@ -10,10 +10,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const s3Client = new S3Client({
   region: "auto",
-  endpoint: "https://c7b58ec191afdc0b4809c0e4e98bcceb.r2.cloudflarestorage.com",
+  endpoint: process.env.R2_ENDPOINT,
   credentials: {
-    accessKeyId: "6fde20f97d63c5825d6f9248e483c759",
-    secretAccessKey: "fd9112ff7a683f679b8ddc54bb23dd0d93d47d12913230eb81b74c4c5cff5986",
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
 });
 
@@ -439,15 +439,15 @@ app.get('/api/stats', async (req, res) => {
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Lütfen bir dosya yükleyin.' });
+      return res.status(400).json({ success: false, error: 'Lütfen bir dosya seçin.' });
     }
 
     const file = req.file;
     const fileExt = file.originalname.split('.').pop();
-    const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
     const command = new PutObjectCommand({
-      Bucket: "mydigitalmenu-media",
+      Bucket: process.env.R2_BUCKET_NAME,
       Key: fileName,
       Body: file.buffer,
       ContentType: file.mimetype || 'image/jpeg',
@@ -455,13 +455,21 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     await s3Client.send(command);
 
-    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || 'https://pub-6156ea55b2304305a24cfcecaa026166.r2.dev').replace(/\/$/, '');
-    const publicUrl = `${publicDomain}/${fileName}`;
+    const publicDomain = process.env.R2_PUBLIC_DOMAIN.replace(/\/$/, '');
+    const imageUrl = `${publicDomain}/${fileName}`;
 
-    return res.json({ url: publicUrl, publicUrl: publicUrl });
+    return res.status(200).json({
+      success: true,
+      imageUrl: imageUrl,
+      url: imageUrl,
+      publicUrl: imageUrl
+    });
   } catch (error) {
-    console.error('R2 Görsel Yükleme Hatası (Backend):', error);
-    return res.status(500).json({ error: 'Görsel yüklenirken sunucu hatası oluştu: ' + error.message });
+    console.error('R2 Yükleme Hatası:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
