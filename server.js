@@ -10,10 +10,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const s3Client = new S3Client({
   region: "auto",
-  endpoint: process.env.R2_ENDPOINT,
+  endpoint: "https://c7b58ec191afdc0b4809c0e4e98bcceb.r2.cloudflarestorage.com",
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    accessKeyId: "6fde20f97d63c5825d6f9248e483c759",
+    secretAccessKey: "fd9112ff7a683f679b8ddc54bb23dd0d93d47d12913230eb81b74c4c5cff5986",
   },
 });
 
@@ -447,7 +447,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
 
     const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
+      Bucket: "mydigitalmenu-media",
       Key: fileName,
       Body: file.buffer,
       ContentType: file.mimetype || 'image/jpeg',
@@ -455,7 +455,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     await s3Client.send(command);
 
-    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || '').replace(/\/$/, '');
+    const publicDomain = (process.env.R2_PUBLIC_DOMAIN || 'https://pub-6156ea55b2304305a24cfcecaa026166.r2.dev').replace(/\/$/, '');
     const publicUrl = `${publicDomain}/${fileName}`;
 
     return res.json({ url: publicUrl, publicUrl: publicUrl });
