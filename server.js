@@ -226,10 +226,6 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
     const coverImage = req.body.coverImage !== undefined ? req.body.coverImage : req.body.cover_image;
     const finalMapsUrl = maps_url !== undefined ? maps_url : req.body.Maps_url;
     
-    console.log("Kafe güncelleme isteği alındı. ID:", id);
-    console.log("Gelen Gövde (Body):", req.body);
-    console.log("Çözümlenen coverImage:", coverImage);
-
     const updateCafe = await pool.query(
       'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11, campaign_text = $12, campaign_text_en = $13 WHERE id = $14 RETURNING *',
       [
@@ -250,7 +246,6 @@ app.put('/api/cafes/:id', verifyToken, async (req, res) => {
       ]
     );
     
-    console.log("Güncelleme Sonrası Kayıt:", updateCafe.rows[0]);
     res.json(updateCafe.rows[0]);
   } catch (err) {
     console.error("Güncelleme Hatası:", err.message);
