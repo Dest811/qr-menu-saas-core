@@ -19,6 +19,8 @@ export default function Menu() {
   const [lang, setLang] = useState('tr'); // Dil Seçimi (tr veya en)
 
   const categoryRefs = useRef({});
+  const categoryBtnRefs = useRef({});
+  const isManualScroll = useRef(false);
 
   useEffect(() => {
     fetchCafeData();
@@ -29,6 +31,52 @@ export default function Menu() {
       document.title = `${cafe.name} | Dijital Menü`;
     }
   }, [cafe]);
+
+  // SCROLL SPY: Kullanıcı sayfayı kaydırdıkça ekrandaki kategoriyi tespit et
+  useEffect(() => {
+    if (!categories || categories.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-120px 0px -50% 0px',
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      if (isManualScroll.current) return;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const catId = entry.target.getAttribute('data-category-id');
+          if (catId) {
+            setActiveCategory(catId);
+          }
+        }
+      });
+    }, observerOptions);
+
+    categories.forEach((cat) => {
+      const el = categoryRefs.current[cat.id];
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [categories]);
+
+  // AUTO-SCROLL CATEGORY BAR: Seçili kategori değiştiğinde üst menü butonunu merkeze kaydır
+  useEffect(() => {
+    if (!activeCategory) return;
+    const activeBtn = categoryBtnRefs.current[activeCategory];
+    if (activeBtn) {
+      activeBtn.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [activeCategory]);
 
   const fetchCafeData = async () => {
     try {
@@ -91,6 +139,7 @@ export default function Menu() {
 
   const scrollToCategory = (categoryId) => {
     setActiveCategory(categoryId);
+    isManualScroll.current = true;
     const element = categoryRefs.current[categoryId];
     if (element) {
       const offset = 140; 
@@ -101,6 +150,10 @@ export default function Menu() {
         top: offsetPosition,
         behavior: "smooth"
       });
+
+      setTimeout(() => {
+        isManualScroll.current = false;
+      }, 800);
     }
   };
 
@@ -190,10 +243,11 @@ export default function Menu() {
             {categories.map(category => (
               <button
                 key={category.id}
+                ref={el => categoryBtnRefs.current[category.id] = el}
                 onClick={() => scrollToCategory(category.id)}
                 style={{
                   backgroundColor: activeCategory === category.id ? primaryColor : 'transparent',
-                  color: activeCategory === category.id ? '#ffffff' : '#555555',
+                  color: activeCategory === category.id ? '#ffffff' : primaryColor,
                   borderColor: activeCategory === category.id ? primaryColor : `${primaryColor}40`
                 }}
                 className="whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 shadow-sm"
@@ -205,17 +259,18 @@ export default function Menu() {
         </div>
       </nav>
 
-      {/* KAMPANYA FIRSAT KARTI (Zarif & Koyu Temalı Premium Kart) */}
+      {/* KAMPANYA FIRSAT KARTI (Tema Rengiyle Uyumlu Dinamik Kart) */}
       {cafe && cafe.campaign_text && cafe.campaign_text.trim() !== '' && (
         <div className="max-w-xl mx-auto px-5 mt-6">
           <div 
-            className="backdrop-blur-md border border-slate-700/50 shadow-[0_0_15px_rgba(255,255,255,0.05)] rounded-2xl p-4 flex items-center gap-3.5 bg-slate-900/60"
+            className="backdrop-blur-md border shadow-sm rounded-2xl p-4 flex items-center gap-3.5 transition-all duration-500"
             style={{ 
-              borderColor: accentColor ? `${accentColor}25` : 'rgba(51, 65, 85, 0.5)'
+              backgroundColor: `${primaryColor}15`,
+              borderColor: `${primaryColor}30`,
             }}
           >
-            {/* Altın sarısı zarif yıldız/kıvılcım ikonu */}
-            <div className="shrink-0 flex items-center justify-center animate-pulse" style={{ color: accentColor || '#D4AF37' }}>
+            {/* İkon */}
+            <div className="shrink-0 flex items-center justify-center animate-pulse" style={{ color: primaryColor }}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
@@ -223,7 +278,7 @@ export default function Menu() {
             
             {/* Metin */}
             <div className="flex-1">
-              <p className="text-slate-200 text-sm font-medium leading-relaxed">
+              <p className="text-sm font-semibold leading-relaxed" style={{ color: primaryColor }}>
                 {lang === 'en' && cafe.campaign_text_en ? cafe.campaign_text_en : cafe.campaign_text}
               </p>
             </div>
@@ -239,6 +294,8 @@ export default function Menu() {
           categories.map(category => (
             <section 
               key={category.id} 
+              id={`category-${category.id}`}
+              data-category-id={category.id}
               ref={el => categoryRefs.current[category.id] = el}
               className="scroll-mt-32 animate-fade-in-up"
             >
