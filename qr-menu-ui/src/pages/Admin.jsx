@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // YENİ: Link özelliğini kullanabilmek için ekledik
+import { Link, useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
 export default function Admin() {
+  const navigate = useNavigate();
   const [cafes, setCafes] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
@@ -215,9 +216,9 @@ export default function Admin() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cafes.map((cafe) => (
-                  <Link 
+                  <div 
                     key={cafe.id} 
-                    to={`/admin/cafe/${cafe.id}`}
+                    onClick={() => navigate(`/admin/cafe/${cafe.id}`)}
                     className="relative bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg hover:border-blue-500 hover:bg-slate-750 hover:shadow-blue-900/20 transition-all cursor-pointer group block"
                   >
                     
@@ -245,7 +246,7 @@ export default function Admin() {
                         <div>Alan Adı: <span className="text-emerald-400 font-mono">{cafe.custom_domain}</span></div>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

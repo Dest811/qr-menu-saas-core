@@ -39,14 +39,21 @@ async function run() {
     await client.query(createCafesTable);
     console.log("✓ Table 'cafes' created (or already exists).");
 
-    // Ensure coverImage column exists in case the table already existed
+    // Ensure all optional columns exist in cafes table in case it already existed
     try {
       await client.query(`
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS working_hours TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS maps_url TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS instagram_url TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS phone_number TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_english BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_spanish BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_arabic BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_en TEXT;
       `);
-      console.log("✓ Columns 'coverImage', 'has_spanish', and 'has_arabic' verified / added.");
+      console.log("✓ Cafe columns ('coverImage', 'working_hours', 'maps_url', 'instagram_url', 'phone_number', 'has_english', 'has_spanish', 'has_arabic', 'campaign_text') verified / added.");
     } catch (columnErr) {
       console.warn("Columns check failed:", columnErr.message);
     }
