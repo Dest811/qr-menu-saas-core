@@ -149,19 +149,22 @@ export default function Menu() {
 
     const element = document.getElementById(`category-${categoryId}`) || categoryRefs.current[categoryId];
     if (element) {
-      const offset = 120; 
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+      try {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        const offset = 130; 
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
 
     setTimeout(() => {
       isManualScroll.current = false;
-    }, 900);
+    }, 850);
   };
 
   if (isLoading) {
@@ -309,7 +312,7 @@ export default function Menu() {
               id={`category-${category.id}`}
               data-category-id={category.id}
               ref={el => categoryRefs.current[category.id] = el}
-              className="scroll-mt-32 animate-fade-in-up"
+              className="scroll-mt-36 animate-fade-in-up"
             >
               <div className="flex items-center mb-6">
                 <h2 className="text-2xl font-bold font-serif pr-4 transition-colors duration-500" style={{ color: primaryColor }}>
