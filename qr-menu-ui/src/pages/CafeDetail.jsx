@@ -1,3 +1,9 @@
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import ImageWithSkeleton from '../components/ImageWithSkeleton';
+
+const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
+
 // Desteklenen Diller Konfigürasyonu (Gelecekte yeni bir dil eklendiğinde sadece buraya 1 nesne eklenir)
 const SUPPORTED_LANGUAGES = [
   { code: 'tr', key: '', name: 'Türkçe', isDefault: true, placeholder: 'Örn: Fırın Sütlaç', descPlaceholder: 'İçindekiler vb.' },
