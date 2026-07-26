@@ -146,9 +146,10 @@ export default function Menu() {
   const scrollToCategory = (categoryId) => {
     setActiveCategory(categoryId);
     isManualScroll.current = true;
-    const element = categoryRefs.current[categoryId];
+
+    const element = document.getElementById(`category-${categoryId}`) || categoryRefs.current[categoryId];
     if (element) {
-      const offset = 140; 
+      const offset = 120; 
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       
@@ -156,11 +157,11 @@ export default function Menu() {
         top: offsetPosition,
         behavior: "smooth"
       });
-
-      setTimeout(() => {
-        isManualScroll.current = false;
-      }, 800);
     }
+
+    setTimeout(() => {
+      isManualScroll.current = false;
+    }, 900);
   };
 
   if (isLoading) {
@@ -246,21 +247,26 @@ export default function Menu() {
       >
         <div className="max-w-xl mx-auto px-4 py-3">
           <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-1">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                ref={el => categoryBtnRefs.current[category.id] = el}
-                onClick={() => scrollToCategory(category.id)}
-                style={{
-                  backgroundColor: activeCategory === category.id ? primaryColor : 'transparent',
-                  color: activeCategory === category.id ? '#ffffff' : primaryColor,
-                  borderColor: activeCategory === category.id ? primaryColor : `${primaryColor}40`
-                }}
-                className="whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 shadow-sm"
-              >
-                {lang === 'en' && category.name_en ? category.name_en : category.name}
-              </button>
-            ))}
+            {categories.map(category => {
+              const isActive = String(activeCategory) === String(category.id);
+              return (
+                <button
+                  key={category.id}
+                  ref={el => categoryBtnRefs.current[category.id] = el}
+                  onClick={() => scrollToCategory(category.id)}
+                  style={{
+                    backgroundColor: isActive ? primaryColor : 'transparent',
+                    color: isActive ? '#ffffff' : primaryColor,
+                    borderColor: isActive ? primaryColor : `${primaryColor}40`
+                  }}
+                  className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition-all duration-300 shadow-sm cursor-pointer ${
+                    isActive ? 'shadow-md scale-105' : 'hover:opacity-80'
+                  }`}
+                >
+                  {lang === 'en' && category.name_en ? category.name_en : category.name}
+                </button>
+              );
+            })}
           </div>
         </div>
       </nav>
