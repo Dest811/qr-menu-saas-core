@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const sharp = require('sharp');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -438,14 +439,20 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 
     const file = req.file;
-    const fileExt = file.originalname.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+
+    // Sharp ile görseli işleme: max genişlik 1000px, WebP formatı, %80 kalite
+    const optimizedBuffer = await sharp(file.buffer)
+      .resize({ width: 1000, withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.webp`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME || 'mydigitalmenu-media',
       Key: fileName,
-      Body: file.buffer,
-      ContentType: file.mimetype || 'image/jpeg',
+      Body: optimizedBuffer,
+      ContentType: 'image/webp',
     });
 
     await s3Client.send(command);
