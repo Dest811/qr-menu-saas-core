@@ -34,36 +34,42 @@ export default function Menu() {
 
   // SCROLL SPY: Kullanıcı sayfayı kaydırdıkça ekrandaki kategoriyi tespit et
   useEffect(() => {
-    if (!categories || categories.length === 0) return;
+    if (isLoading || !categories || categories.length === 0) return;
 
     const observerOptions = {
       root: null,
-      rootMargin: '-120px 0px -50% 0px',
-      threshold: 0.1,
+      rootMargin: '-100px 0px -55% 0px',
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const handleIntersect = (entries) => {
       if (isManualScroll.current) return;
 
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const catId = entry.target.getAttribute('data-category-id');
-          if (catId) {
-            setActiveCategory(catId);
-          }
+      const intersecting = entries.filter((entry) => entry.isIntersecting);
+      if (intersecting.length > 0) {
+        // Ekranın üst hizasına en yakın görünür kategoriyi seç
+        intersecting.sort((a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top));
+        const catId = intersecting[0].target.getAttribute('data-category-id');
+        if (catId) {
+          setActiveCategory(catId);
         }
-      });
-    }, observerOptions);
+      }
+    };
 
-    categories.forEach((cat) => {
-      const el = categoryRefs.current[cat.id];
-      if (el) observer.observe(el);
-    });
+    const observer = new IntersectionObserver(handleIntersect, observerOptions);
+
+    // DOM çizimi tamamlandıktan sonra kategorileri izlemeye al
+    const timeoutId = setTimeout(() => {
+      categories.forEach((cat) => {
+        const el = document.getElementById(`category-${cat.id}`) || categoryRefs.current[cat.id];
+        if (el) observer.observe(el);
+      });
+    }, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [categories]);
+  }, [categories, productsByCategory, isLoading]);
 
   // AUTO-SCROLL CATEGORY BAR: Seçili kategori değiştiğinde üst menü butonunu merkeze kaydır
   useEffect(() => {
