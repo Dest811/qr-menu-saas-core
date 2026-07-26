@@ -43,10 +43,12 @@ async function run() {
     try {
       await client.query(`
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_spanish BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_arabic BOOLEAN DEFAULT FALSE;
       `);
-      console.log("✓ Column 'coverImage' verified / added.");
+      console.log("✓ Columns 'coverImage', 'has_spanish', and 'has_arabic' verified / added.");
     } catch (columnErr) {
-      console.warn("Column coverImage check failed:", columnErr.message);
+      console.warn("Columns check failed:", columnErr.message);
     }
 
     // Create categories table

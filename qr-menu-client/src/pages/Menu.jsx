@@ -14,13 +14,30 @@ export default function Menu() {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('');
 
-  // YENİ: Detay modalını kontrol edecek state'ler
+  // YENİ: Detay modalını ve Dil Dropdown'unu kontrol edecek state'ler
   const [selectedProductDetail, setSelectedProductDetail] = useState(null); // Hangi ürünün detayı açık?
-  const [lang, setLang] = useState('tr'); // Dil Seçimi (tr veya en)
+  const [lang, setLang] = useState('tr'); // Dil Seçimi (tr, en, es, ar)
+  const [isLangOpen, setIsLangOpen] = useState(false); // Dropdown açık/kapalı state
 
   const categoryRefs = useRef({});
   const categoryBtnRefs = useRef({});
   const isManualScroll = useRef(false);
+  const langDropdownRef = useRef(null);
+
+  // DROPDOWN CLICK OUTSIDE: Menü dışına tıklandığında dili kapat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCafeData();
@@ -102,7 +119,7 @@ export default function Menu() {
         }
         currentCafe = await cafeRes.json();
       } else {
-        // Standart slug üzerinden kafeyi getir (Tüm kafeleri indirip filtreleme sorunu çözüldü!)
+        // Standart slug üzerinden kafeyi getir
         if (!slug) {
           setError("Lütfen geçerli bir kafe adresi giriniz.");
           setIsLoading(false);
@@ -144,23 +161,99 @@ export default function Menu() {
   };
 
   const scrollToCategory = (categoryId) => {
-    // 1. Önce Observer'ı ANINDA senkron olarak sustur
     isManualScroll.current = true;
-
-    // 2. Butonu görsel olarak aktif yap
     setActiveCategory(categoryId);
 
-    // 3. DOM elemanını bul ve anında scrollIntoView tetikle
     const targetElement = document.getElementById(`category-${categoryId}`) || categoryRefs.current[categoryId];
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // 4. Kaydırma animasyonu bittikten sonra Observer'ı tekrar serbest bırak
     setTimeout(() => {
       isManualScroll.current = false;
     }, 1000);
   };
+
+  // Dinamik olarak aktif dilleri belirle
+  const availableLanguages = [
+    { code: 'tr', label: 'TR', fullName: 'Türkçe (TR)' },
+    ...(cafe?.has_english ? [{ code: 'en', label: 'EN', fullName: 'English (EN)' }] : []),
+    ...(cafe?.has_spanish ? [{ code: 'es', label: 'ES', fullName: 'Español (ES)' }] : []),
+    ...(cafe?.has_arabic ? [{ code: 'ar', label: 'AR', fullName: 'العربية (AR)' }] : []),
+  ];
+
+  // Çoklu dil metin yardımcıları
+  const getCategoryName = (category) => {
+    if (!category) return '';
+    if (lang === 'en' && category.name_en) return category.name_en;
+    if (lang === 'es' && category.name_es) return category.name_es;
+    if (lang === 'ar' && category.name_ar) return category.name_ar;
+    return category.name;
+  };
+
+  const getProductName = (product) => {
+    if (!product) return '';
+    if (lang === 'en' && product.name_en) return product.name_en;
+    if (lang === 'es' && product.name_es) return product.name_es;
+    if (lang === 'ar' && product.name_ar) return product.name_ar;
+    return product.name;
+  };
+
+  const getProductDesc = (product) => {
+    if (!product) return '';
+    if (lang === 'en' && product.description_en) return product.description_en;
+    if (lang === 'es' && product.description_es) return product.description_es;
+    if (lang === 'ar' && product.description_ar) return product.description_ar;
+    return product.description;
+  };
+
+  const getCampaignText = () => {
+    if (!cafe) return '';
+    if (lang === 'en' && cafe.campaign_text_en) return cafe.campaign_text_en;
+    if (lang === 'es' && cafe.campaign_text_es) return cafe.campaign_text_es;
+    if (lang === 'ar' && cafe.campaign_text_ar) return cafe.campaign_text_ar;
+    return cafe.campaign_text;
+  };
+
+  const uiTranslations = {
+    tr: {
+      getDirections: 'Yol Tarifi Al',
+      digitalMenu: 'Dijital Menü',
+      menuSoon: 'Menü çok yakında eklenecektir.',
+      noProducts: 'Bu kategoride henüz ürün yok.',
+      soldOut: 'TÜKENDİ',
+      workingHours: 'Çalışma Saatleri:',
+      contact: 'İletişim:'
+    },
+    en: {
+      getDirections: 'Get Directions',
+      digitalMenu: 'Digital Menu',
+      menuSoon: 'The menu will be available soon.',
+      noProducts: 'No products in this category yet.',
+      soldOut: 'SOLD OUT',
+      workingHours: 'Working Hours:',
+      contact: 'Contact:'
+    },
+    es: {
+      getDirections: 'Obtener Indicaciones',
+      digitalMenu: 'Menú Digital',
+      menuSoon: 'El menú estará disponible pronto.',
+      noProducts: 'Aún no hay productos en esta categoría.',
+      soldOut: 'AGOTADO',
+      workingHours: 'Horas de Trabajo:',
+      contact: 'Contacto:'
+    },
+    ar: {
+      getDirections: 'احصل على الاتجاهات',
+      digitalMenu: 'قائمة طعام رقمية',
+      menuSoon: 'ستتوفر القائمة قريبًا.',
+      noProducts: 'لا توجد منتجات في هذه الفئة بعد.',
+      soldOut: 'نفدت الكمية',
+      workingHours: 'ساعات العمل:',
+      contact: 'اتصال:'
+    }
+  };
+  const t = uiTranslations[lang] || uiTranslations.tr;
 
   if (isLoading) {
     return (
@@ -189,7 +282,11 @@ export default function Menu() {
   const coverImage = cafe.hero_image || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
 
   return (
-    <div className="min-h-screen font-sans pb-24 transition-colors duration-500 animate-fade-in" style={{ backgroundColor: bgColor }}>
+    <div 
+      className="min-h-screen font-sans pb-24 transition-colors duration-500 animate-fade-in" 
+      style={{ backgroundColor: bgColor }}
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
+    >
       
       {/* HERO SECTION */}
       <header className="relative pt-24 pb-20 px-6 text-center overflow-hidden shadow-lg">
@@ -200,7 +297,7 @@ export default function Menu() {
         <div className="absolute inset-0 opacity-75 mix-blend-multiply transition-colors duration-500" style={{ backgroundColor: primaryColor }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
         
-        {/* Yol Tarifi Al (Opsiyonel - Sol Üst Köşeye Sabitlenmiş Şık Kapsül) */}
+        {/* Yol Tarifi Al (Sol Üst Köşeye Sabitlenmiş Şık Kapsül) */}
         {cafe.maps_url && cafe.maps_url.trim() !== '' && (
           <a 
             href={cafe.maps_url} 
@@ -212,18 +309,75 @@ export default function Menu() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>{lang === 'en' ? 'Get Directions' : 'Yol Tarifi Al'}</span>
+            <span>{t.getDirections}</span>
           </a>
         )}
         
-        {/* Dil Değiştirme Butonu (Opsiyonel - Sağ Üst Köşeye Sabitlenmiş Şık Kapsül) */}
-        {cafe && cafe.has_english && (
-          <button 
-            onClick={() => setLang(prev => prev === 'tr' ? 'en' : 'tr')}
-            className="absolute top-4 right-4 z-20 flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10"
-          >
-            <span>{lang === 'tr' ? '🇬🇧 EN' : '🇹🇷 TR'}</span>
-          </button>
+        {/* Dil Değiştirme Dropdown Menüsü (Sağ Üst Köşede Açılır Menü) */}
+        {cafe && availableLanguages.length > 1 && (
+          <div className="absolute top-4 right-4 z-30" ref={langDropdownRef}>
+            <button 
+              type="button"
+              onClick={() => setIsLangOpen(prev => !prev)}
+              className="flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10 cursor-pointer select-none active:scale-95"
+              aria-expanded={isLangOpen}
+              aria-haspopup="true"
+            >
+              <span className="tracking-wider uppercase font-bold">{lang}</span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className={`h-3.5 w-3.5 text-white/80 transition-transform duration-200 ${isLangOpen ? 'rotate-180' : ''}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Açılır Menü (Dropdown List) */}
+            <div 
+              className={`absolute right-0 mt-2 w-44 bg-black/85 backdrop-blur-xl border border-white/15 shadow-2xl rounded-2xl py-1.5 overflow-hidden transition-all duration-200 ease-out origin-top-right ${
+                isLangOpen 
+                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
+                  : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+              }`}
+            >
+              {availableLanguages.map((l) => {
+                const isSelected = lang === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => {
+                      setLang(l.code);
+                      setIsLangOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between transition-colors cursor-pointer select-none ${
+                      isSelected 
+                        ? 'bg-white/20 text-white font-bold' 
+                        : 'text-white/80 hover:bg-white/10 hover:text-white font-medium'
+                    }`}
+                  >
+                    <span>{l.fullName}</span>
+                    {isSelected && (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-3.5 w-3.5 text-amber-400 shrink-0 ml-2" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor" 
+                        strokeWidth={3}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
         
         <div className="relative z-10 max-w-lg mx-auto">
@@ -232,7 +386,7 @@ export default function Menu() {
           </h1>
           <p className="text-sm font-medium tracking-widest uppercase flex items-center justify-center gap-2 drop-shadow-sm transition-colors duration-500" style={{ color: accentColor }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
-            {lang === 'en' ? 'Digital Menu' : 'Dijital Menü'}
+            {t.digitalMenu}
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
           </p>
         </div>
@@ -261,7 +415,7 @@ export default function Menu() {
                     isActive ? 'shadow-md scale-105' : 'hover:opacity-80'
                   }`}
                 >
-                  {lang === 'en' && category.name_en ? category.name_en : category.name}
+                  {getCategoryName(category)}
                 </button>
               );
             })}
@@ -269,7 +423,7 @@ export default function Menu() {
         </div>
       </nav>
 
-      {/* KAMPANYA FIRSAT KARTI (Tema Rengiyle Uyumlu Dinamik Kart) */}
+      {/* KAMPANYA FIRSAT KARTI */}
       {cafe && cafe.campaign_text && cafe.campaign_text.trim() !== '' && (
         <div className="max-w-xl mx-auto px-5 mt-6">
           <div 
@@ -279,17 +433,15 @@ export default function Menu() {
               borderColor: `${primaryColor}30`,
             }}
           >
-            {/* İkon */}
             <div className="shrink-0 flex items-center justify-center animate-pulse" style={{ color: primaryColor }}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
             </div>
             
-            {/* Metin */}
             <div className="flex-1">
               <p className="text-sm font-semibold leading-relaxed" style={{ color: primaryColor }}>
-                {lang === 'en' && cafe.campaign_text_en ? cafe.campaign_text_en : cafe.campaign_text}
+                {getCampaignText()}
               </p>
             </div>
           </div>
@@ -299,7 +451,7 @@ export default function Menu() {
       {/* MENÜ İÇERİĞİ */}
       <main className="max-w-xl mx-auto p-5 mt-4 space-y-12">
         {categories.length === 0 ? (
-          <p className="text-center text-slate-400 mt-10 text-sm">{lang === 'en' ? 'The menu will be available soon.' : 'Menü çok yakında eklenecektir.'}</p>
+          <p className="text-center text-slate-400 mt-10 text-sm">{t.menuSoon}</p>
         ) : (
           categories.map(category => (
             <section 
@@ -311,7 +463,7 @@ export default function Menu() {
             >
               <div className="flex items-center mb-6">
                 <h2 className="text-2xl font-bold font-serif pr-4 transition-colors duration-500" style={{ color: primaryColor }}>
-                  {lang === 'en' && category.name_en ? category.name_en : category.name}
+                  {getCategoryName(category)}
                 </h2>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-slate-300 to-transparent"></div>
               </div>
@@ -319,18 +471,18 @@ export default function Menu() {
               {/* ÜRÜN KARTLARI */}
               <div className="space-y-4">
                 {productsByCategory[category.id]?.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">{lang === 'en' ? 'No products in this category yet.' : 'Bu kategoride henüz ürün yok.'}</p>
+                  <p className="text-xs text-slate-400 italic">{t.noProducts}</p>
                 ) : (
                   productsByCategory[category.id]?.map(product => (
                     <div 
                       key={product.id}
-                      onClick={() => product.is_active && setSelectedProductDetail(product)} // YENİ: Ürün tıklandığında detay modalını aç
+                      onClick={() => product.is_active && setSelectedProductDetail(product)}
                       className={`group bg-white rounded-3xl p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 flex gap-4 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] cursor-pointer ${!product.is_active && 'opacity-60 grayscale'}`}
                     >
                       <div className="flex-1 flex flex-col justify-center py-2 pl-2">
                         <div className="flex justify-between items-start mb-1 gap-2">
                           <h3 className={`font-bold text-[17px] leading-tight ${!product.is_active ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                             {lang === 'en' && product.name_en ? product.name_en : product.name}
+                             {getProductName(product)}
                           </h3>
                           {product.is_active ? (
                             <span 
@@ -341,13 +493,13 @@ export default function Menu() {
                             </span>
                           ) : (
                             <span className="font-bold text-red-700 bg-red-50 px-2 py-1 rounded-xl text-xs shrink-0 border border-red-100">
-                              {lang === 'en' ? 'SOLD OUT' : 'TÜKENDİ'}
+                              {t.soldOut}
                             </span>
                           )}
                         </div>
-                         {(lang === 'en' && product.description_en ? product.description_en : product.description) && (
+                         {getProductDesc(product) && (
                           <p className="text-[13px] text-slate-500 leading-snug line-clamp-2 mt-1 pr-2">
-                            {lang === 'en' && product.description_en ? product.description_en : product.description}
+                            {getProductDesc(product)}
                           </p>
                         )}
                       </div>
@@ -372,7 +524,7 @@ export default function Menu() {
         )}
       </main>
 
-      {/* FOOTER ALANI (Opsiyonel - İletişim ve Çalışma Saatleri) */}
+      {/* FOOTER ALANI */}
       {((cafe.working_hours && cafe.working_hours.trim() !== '') || 
         (cafe.phone_number && cafe.phone_number.trim() !== '') || 
         (cafe.instagram_url && cafe.instagram_url.trim() !== '')) && (
@@ -383,7 +535,7 @@ export default function Menu() {
           {cafe.working_hours && cafe.working_hours.trim() !== '' && (
             <div className="flex items-center gap-1.5 text-slate-500 text-sm">
               <span className="text-base select-none">🕒</span>
-              <span>{lang === 'en' ? 'Working Hours:' : 'Çalışma Saatleri:'} {cafe.working_hours}</span>
+              <span>{t.workingHours} {cafe.working_hours}</span>
             </div>
           )}
 
@@ -394,7 +546,7 @@ export default function Menu() {
               style={{ color: primaryColor }}
             >
               <span className="text-base select-none">📞</span>
-              <span>{lang === 'en' ? 'Contact:' : 'İletişim:'} {cafe.phone_number}</span>
+              <span>{t.contact} {cafe.phone_number}</span>
             </a>
           )}
 
@@ -406,7 +558,6 @@ export default function Menu() {
               className="flex items-center gap-1.5 hover:opacity-85 transition-opacity text-sm font-semibold"
               style={{ color: primaryColor }}
             >
-              {/* Minimalist Instagram SVG */}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ stroke: primaryColor }}>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" strokeWidth={2} />
                 <path strokeWidth={2} d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
@@ -418,23 +569,21 @@ export default function Menu() {
         </footer>
       )}
 
-{/* --- YENİ: TASARIMLI VE ANİMASYONLU ÜRÜN DETAY MODALI --- */}
+      {/* ÜRÜN DETAY MODALI */}
       {selectedProductDetail && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 transition-opacity duration-300 ease-out"
           style={{ opacity: selectedProductDetail ? 1 : 0 }}
-          onClick={() => setSelectedProductDetail(null)} // Arka plana tıklandığında kapat
+          onClick={() => setSelectedProductDetail(null)}
         >
-          {/* Modal Kartı (Özel Animasyon Sınıfı: animate-scale-in) */}
           <div 
             className="animate-scale-in bg-slate-950 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden border border-slate-800 transition-all duration-300 ease-out"
             style={{ 
-              backgroundColor: `${primaryColor}CC`, // Ana renkle transparan Glass efekti
+              backgroundColor: `${primaryColor}CC`,
               backdropFilter: 'blur(15px)' 
             }}
-            onClick={(e) => e.stopPropagation()} // Kartın içine tıklandığında kapatmayı engelle
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Büyük Ürün Görseli */}
             {selectedProductDetail.image_url ? (
               <div className="w-full h-72 relative overflow-hidden">
                 <ImageWithSkeleton
@@ -442,7 +591,6 @@ export default function Menu() {
                   alt={selectedProductDetail.name}
                   className="w-full h-72 object-cover"
                 />
-                {/* Kapatma Butonu (X) */}
                 <button 
                   onClick={() => setSelectedProductDetail(null)}
                   className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center text-xl font-bold backdrop-blur-sm transition-all hover:bg-black/70 z-20"
@@ -462,16 +610,13 @@ export default function Menu() {
               </div>
             )}
 
-            {/* Ürün Detay Metinleri */}
             <div className="p-8 text-white">
               <div className="flex justify-between items-start mb-6 gap-3">
-                
-               {/* DAHA KÜÇÜK VE ZARİF BAŞLIK */}
                 <h1 
                   className="text-2xl font-bold leading-tight tracking-tight break-words" 
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
-                   {lang === 'en' && selectedProductDetail.name_en ? selectedProductDetail.name_en : selectedProductDetail.name}
+                   {getProductName(selectedProductDetail)}
                 </h1>
                 
                 <p className="text-2xl font-black shrink-0 drop-shadow-md" style={{ color: accentColor }}>
@@ -479,11 +624,10 @@ export default function Menu() {
                 </p>
               </div>
               
-               {/* SADECE SENİN GİRDİĞİN AÇIKLAMA (Esnek ve Dinamik) */}
-              {(lang === 'en' && selectedProductDetail.description_en ? selectedProductDetail.description_en : selectedProductDetail.description) && (
+              {getProductDesc(selectedProductDetail) && (
                 <div className="border-t border-white/20 pt-5 mt-2">
                   <p className="text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words">
-                    {lang === 'en' && selectedProductDetail.description_en ? selectedProductDetail.description_en : selectedProductDetail.description}
+                    {getProductDesc(selectedProductDetail)}
                   </p>
                 </div>
               )}

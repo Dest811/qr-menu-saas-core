@@ -57,6 +57,8 @@ export default function CafeDetail() {
     instagram_url: '',
     phone_number: '',
     has_english: false,
+    has_spanish: false,
+    has_arabic: false,
     campaign_text: '',
     campaign_text_en: ''
   });
@@ -101,6 +103,8 @@ export default function CafeDetail() {
           instagram_url: data.instagram_url || '',
           phone_number: data.phone_number || '',
           has_english: data.has_english || false,
+          has_spanish: data.has_spanish || false,
+          has_arabic: data.has_arabic || false,
           campaign_text: data.campaign_text || '',
           campaign_text_en: data.campaign_text_en || ''
         });
@@ -132,6 +136,8 @@ export default function CafeDetail() {
         instagram_url: branding.instagram_url || '',
         phone_number: branding.phone_number || '',
         has_english: branding.has_english || false,
+        has_spanish: branding.has_spanish || false,
+        has_arabic: branding.has_arabic || false,
         campaign_text: branding.campaign_text || '',
         campaign_text_en: branding.campaign_text_en || ''
       };
@@ -828,8 +834,10 @@ export default function CafeDetail() {
                   </label>
                 </div>
 
-                {/* İngilizce Desteği Toggle */}
-                <div className="border-t border-slate-700/50 pt-4 mt-4">
+                {/* Çoklu Dil Desteği Toggles */}
+                <div className="border-t border-slate-700/50 pt-4 mt-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menü Dil Desteği</p>
+                  
                   <label className="flex items-center gap-3 cursor-pointer select-none group">
                     <input 
                       type="checkbox" 
@@ -838,7 +846,31 @@ export default function CafeDetail() {
                       className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
                     />
                     <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
-                      🇬🇧 İngilizce Menü Desteğini Aç
+                      İngilizce Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.has_spanish || false}
+                      onChange={(e) => setBranding({...branding, has_spanish: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      İspanyolca Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.has_arabic || false}
+                      onChange={(e) => setBranding({...branding, has_arabic: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Arapça Menü Desteğini Aç
                     </span>
                   </label>
                 </div>
