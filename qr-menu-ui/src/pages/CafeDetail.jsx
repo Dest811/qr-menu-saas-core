@@ -422,7 +422,7 @@ export default function CafeDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
+    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto">
         
         {/* Başlık ve Üst Menü */}
@@ -430,11 +430,11 @@ export default function CafeDetail() {
           <Link to="/admin" className="text-sm text-blue-400 hover:underline">
             ← SaaS Kontrol Merkezine Dön
           </Link>
-          <div className="flex justify-between items-center mt-4 border-b border-slate-700 pb-6">
-            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 border-b border-slate-700 pb-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400 break-words">
               Menü Yönetimi: {cafeDetails ? cafeDetails.name : `Yükleniyor (ID: ${id})`}
             </h1>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
               {/* Siteye Git Butonu */}
               {cafeDetails && (
                 <a 
@@ -447,7 +447,7 @@ export default function CafeDetail() {
                   })()}
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold transition-all border border-blue-500 flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-900/40"
+                  className="flex-1 sm:flex-initial justify-center bg-blue-600 hover:bg-blue-500 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all border border-blue-500 flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-900/40 text-sm sm:text-base"
                 >
                   🔗 Siteye Git
                 </a>
@@ -455,13 +455,13 @@ export default function CafeDetail() {
               {/* Görünüm Özelleştirme Butonu */}
               <button 
                 onClick={() => setIsSettingsOpen(true)}
-                className="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-lg font-bold transition-all border border-slate-600 flex items-center gap-2 cursor-pointer"
+                className="flex-1 sm:flex-initial justify-center bg-slate-700 hover:bg-slate-600 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all border border-slate-600 flex items-center gap-2 cursor-pointer text-sm sm:text-base"
               >
                 🎨 Görünümü Özelleştir
               </button>
               <button 
                 onClick={() => setIsCategoryModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/50 cursor-pointer"
+                className="w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/50 cursor-pointer text-sm sm:text-base"
               >
                 + Yeni Kategori
               </button>
@@ -489,17 +489,17 @@ export default function CafeDetail() {
             {categories.map((category) => (
               <div 
                 key={category.id} 
-                className="bg-slate-800 p-6 rounded-xl border border-slate-700 flex justify-between items-center hover:border-slate-600 transition-colors group"
+                className="bg-slate-800 p-4 sm:p-6 rounded-xl border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-slate-600 transition-colors group"
               >
                 <div>
-                  <h3 className="text-xl font-bold text-slate-200">{category.name}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-200">{category.name}</h3>
                   <p className="text-xs text-slate-500 mt-1">Sıralama (Order Index): {category.order_index}</p>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t border-slate-700/50 sm:border-t-0">
                   <button 
                     onClick={() => openProductManager(category)}
-                    className="text-sm bg-blue-900/50 hover:bg-blue-600 text-blue-400 hover:text-white px-4 py-2 rounded-full border border-blue-800 transition-all font-medium"
+                    className="text-xs sm:text-sm bg-blue-900/50 hover:bg-blue-600 text-blue-400 hover:text-white px-4 py-2 rounded-full border border-blue-800 transition-all font-medium flex-1 sm:flex-none text-center"
                   >
                     Ürünleri Yönet →
                   </button>

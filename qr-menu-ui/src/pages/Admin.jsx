@@ -153,17 +153,17 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
+    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto relative">
         
-        <header className="flex justify-between items-center mb-12 border-b border-slate-700 pb-6">
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12 border-b border-slate-700 pb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
             SaaS Kontrol Merkezi
           </h1>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center w-full sm:w-auto">
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-blue-900/50 cursor-pointer"
+              className="flex-1 sm:flex-initial text-center bg-blue-600 hover:bg-blue-500 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-blue-900/50 cursor-pointer text-sm sm:text-base"
             >
               + Yeni Kafe Ekle
             </button>
@@ -172,7 +172,7 @@ export default function Admin() {
                 localStorage.removeItem('adminToken');
                 window.location.reload();
               }}
-              className="bg-slate-800 hover:bg-slate-750 border border-slate-700 px-4 py-2 rounded-lg font-semibold text-slate-300 transition-all cursor-pointer"
+              className="bg-slate-800 hover:bg-slate-750 border border-slate-700 px-4 py-2 rounded-lg font-semibold text-slate-300 transition-all cursor-pointer text-sm sm:text-base"
             >
               Çıkış Yap
             </button>
