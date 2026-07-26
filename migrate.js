@@ -80,6 +80,25 @@ async function run() {
     await client.query(createProductsTable);
     console.log("✓ Table 'products' created (or already exists).");
 
+    // Ensure multi-language columns exist on products and categories
+    try {
+      await client.query(`
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_en VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_en TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_es VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_es TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_ar VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_ar TEXT;
+
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_en VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_es VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_ar VARCHAR(255);
+      `);
+      console.log("✓ Multi-language columns verified on products and categories.");
+    } catch (langColErr) {
+      console.warn("Language columns check failed:", langColErr.message);
+    }
+
     console.log("MIGRATION SUCCESS: All database tables are fully configured!");
   } catch (err) {
     console.error("MIGRATION FAILED:", err.message);

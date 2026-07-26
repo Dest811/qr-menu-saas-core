@@ -18,12 +18,12 @@ const getProductsByCategoryId = async (req, res) => {
 // 2. Yeni ürün ekle (POST) - [KORUMALI]
 const createProduct = async (req, res) => {
   try {
-    const { category_id, name, name_en, description, description_en, price, image_url, is_active } = req.body;
+    const { category_id, name, name_en, name_es, name_ar, description, description_en, description_es, description_ar, price, image_url, is_active } = req.body;
     const activeStatus = is_active !== undefined ? is_active : true;
 
     const newProduct = await pool.query(
-      'INSERT INTO products (category_id, name, name_en, description, description_en, price, image_url, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [category_id, name, name_en || null, description || null, description_en || null, price, image_url || null, activeStatus]
+      'INSERT INTO products (category_id, name, name_en, name_es, name_ar, description, description_en, description_es, description_ar, price, image_url, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+      [category_id, name, name_en || null, name_es || null, name_ar || null, description || null, description_en || null, description_es || null, description_ar || null, price, image_url || null, activeStatus]
     );
     res.json(newProduct.rows[0]);
   } catch (err) {
@@ -68,7 +68,7 @@ const updateProduct = async (req, res) => {
       return res.status(400).json({ error: "Geçersiz ürün kimliği." });
     }
 
-    const { name, name_en, description, description_en, price, image_url, is_active } = req.body;
+    const { name, name_en, name_es, name_ar, description, description_en, description_es, description_ar, price, image_url, is_active } = req.body;
 
     if (!name || price === undefined || isNaN(parseFloat(price))) {
       return res.status(400).json({ error: "Ürün adı ve geçerli bir fiyat zorunludur." });
@@ -76,11 +76,11 @@ const updateProduct = async (req, res) => {
 
     let query, params;
     if (is_active !== undefined) {
-      query = 'UPDATE products SET name = $1, name_en = $2, description = $3, description_en = $4, price = $5, image_url = $6, is_active = $7 WHERE id = $8 RETURNING *';
-      params = [name, name_en || null, description || null, description_en || null, parseFloat(price), image_url || null, is_active, productId];
+      query = 'UPDATE products SET name = $1, name_en = $2, name_es = $3, name_ar = $4, description = $5, description_en = $6, description_es = $7, description_ar = $8, price = $9, image_url = $10, is_active = $11 WHERE id = $12 RETURNING *';
+      params = [name, name_en || null, name_es || null, name_ar || null, description || null, description_en || null, description_es || null, description_ar || null, parseFloat(price), image_url || null, is_active, productId];
     } else {
-      query = 'UPDATE products SET name = $1, name_en = $2, description = $3, description_en = $4, price = $5, image_url = $6 WHERE id = $7 RETURNING *';
-      params = [name, name_en || null, description || null, description_en || null, parseFloat(price), image_url || null, productId];
+      query = 'UPDATE products SET name = $1, name_en = $2, name_es = $3, name_ar = $4, description = $5, description_en = $6, description_es = $7, description_ar = $8, price = $9, image_url = $10 WHERE id = $11 RETURNING *';
+      params = [name, name_en || null, name_es || null, name_ar || null, description || null, description_en || null, description_es || null, description_ar || null, parseFloat(price), image_url || null, productId];
     }
 
     const updatedProduct = await pool.query(query, params);

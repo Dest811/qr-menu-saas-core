@@ -14,6 +14,8 @@ export default function CafeDetail() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryName, setCategoryName] = useState('');
   const [categoryNameEn, setCategoryNameEn] = useState('');
+  const [categoryNameEs, setCategoryNameEs] = useState('');
+  const [categoryNameAr, setCategoryNameAr] = useState('');
   const [orderIndex, setOrderIndex] = useState(0);
 
   // --- ÜRÜN STATE'LERİ ---
@@ -24,8 +26,12 @@ export default function CafeDetail() {
   // Ürün Form State'leri
   const [productName, setProductName] = useState('');
   const [productNameEn, setProductNameEn] = useState('');
+  const [productNameEs, setProductNameEs] = useState('');
+  const [productNameAr, setProductNameAr] = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [productDescriptionEn, setProductDescriptionEn] = useState('');
+  const [productDescriptionEs, setProductDescriptionEs] = useState('');
+  const [productDescriptionAr, setProductDescriptionAr] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productImageUrl, setProductImageUrl] = useState('');
   const [isAddUploading, setIsAddUploading] = useState(false);
@@ -35,8 +41,12 @@ export default function CafeDetail() {
   const [selectedProductToEdit, setSelectedProductToEdit] = useState(null);
   const [editProductName, setEditProductName] = useState('');
   const [editProductNameEn, setEditProductNameEn] = useState('');
+  const [editProductNameEs, setEditProductNameEs] = useState('');
+  const [editProductNameAr, setEditProductNameAr] = useState('');
   const [editProductDescription, setEditProductDescription] = useState('');
   const [editProductDescriptionEn, setEditProductDescriptionEn] = useState('');
+  const [editProductDescriptionEs, setEditProductDescriptionEs] = useState('');
+  const [editProductDescriptionAr, setEditProductDescriptionAr] = useState('');
   const [editProductPrice, setEditProductPrice] = useState('');
   const [editProductImageUrl, setEditProductImageUrl] = useState('');
   const [isSavingProduct, setIsSavingProduct] = useState(false);
@@ -199,6 +209,8 @@ export default function CafeDetail() {
           cafe_id: parseInt(id),
           name: categoryName,
           name_en: categoryNameEn || null,
+          name_es: categoryNameEs || null,
+          name_ar: categoryNameAr || null,
           order_index: parseInt(orderIndex)
         }),
       });
@@ -209,6 +221,8 @@ export default function CafeDetail() {
         fetchCategories(); 
         setCategoryName('');
         setCategoryNameEn('');
+        setCategoryNameEs('');
+        setCategoryNameAr('');
         setOrderIndex(0);
         setIsCategoryModalOpen(false);
       }
@@ -320,8 +334,12 @@ export default function CafeDetail() {
           category_id: selectedCategory.id,
           name: productName,
           name_en: productNameEn || null,
+          name_es: productNameEs || null,
+          name_ar: productNameAr || null,
           description: productDescription,
           description_en: productDescriptionEn || null,
+          description_es: productDescriptionEs || null,
+          description_ar: productDescriptionAr || null,
           price: parseFloat(productPrice),
           image_url: productImageUrl,
           is_active: true
@@ -336,8 +354,12 @@ export default function CafeDetail() {
         
         setProductName('');
         setProductNameEn('');
+        setProductNameEs('');
+        setProductNameAr('');
         setProductDescription('');
         setProductDescriptionEn('');
+        setProductDescriptionEs('');
+        setProductDescriptionAr('');
         setProductPrice('');
         setProductImageUrl('');
       }
@@ -382,11 +404,15 @@ export default function CafeDetail() {
 
   const openProductEdit = (product) => {
     setSelectedProductToEdit(product);
-    setEditProductName(product.name);
+    setEditProductName(product.name || '');
     setEditProductNameEn(product.name_en || '');
+    setEditProductNameEs(product.name_es || '');
+    setEditProductNameAr(product.name_ar || '');
     setEditProductPrice(product.price);
     setEditProductDescription(product.description || '');
     setEditProductDescriptionEn(product.description_en || '');
+    setEditProductDescriptionEs(product.description_es || '');
+    setEditProductDescriptionAr(product.description_ar || '');
     setEditProductImageUrl(product.image_url || '');
     setIsEditProductModalOpen(true);
   };
@@ -401,8 +427,12 @@ export default function CafeDetail() {
         body: JSON.stringify({
           name: editProductName,
           name_en: editProductNameEn || null,
+          name_es: editProductNameEs || null,
+          name_ar: editProductNameAr || null,
           description: editProductDescription,
           description_en: editProductDescriptionEn || null,
+          description_es: editProductDescriptionEs || null,
+          description_ar: editProductDescriptionAr || null,
           price: parseFloat(editProductPrice),
           image_url: editProductImageUrl
         }),
@@ -549,11 +579,35 @@ export default function CafeDetail() {
                     <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (İngilizce)</label>
                     <input 
                       type="text" 
-                      required
                       value={categoryNameEn}
                       onChange={(e) => setCategoryNameEn(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
                       placeholder="Örn: Desserts, Main Courses"
+                    />
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_spanish && (
+                  <div className="mb-4">
+                    <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (İspanyolca)</label>
+                    <input 
+                      type="text" 
+                      value={categoryNameEs}
+                      onChange={(e) => setCategoryNameEs(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="Örn: Postres, Platos Principales"
+                    />
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_arabic && (
+                  <div className="mb-4">
+                    <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (Arapça)</label>
+                    <input 
+                      type="text" 
+                      value={categoryNameAr}
+                      onChange={(e) => setCategoryNameAr(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="Örn: الحلويات، الأطباق الرئيسية"
+                      dir="rtl"
                     />
                   </div>
                 )}
@@ -598,27 +652,51 @@ export default function CafeDetail() {
                   <h3 className="text-lg font-bold text-slate-300 mb-4">Hızlı Ürün Ekle</h3>
                   <form onSubmit={handleSaveProduct}>
                     <div className="mb-4">
-                      <label className="block text-sm text-slate-400 mb-1">Ürün Adı</label>
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı</label>
                       <input type="text" required value={productName} onChange={(e) => setProductName(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Fırın Sütlaç" />
                     </div>
                     {cafeDetails && cafeDetails.has_english && (
                       <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1">Ürün Adı (İngilizce)</label>
-                        <input type="text" required value={productNameEn} onChange={(e) => setProductNameEn(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Oven Baked Rice Pudding" />
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İngilizce)</label>
+                        <input type="text" value={productNameEn} onChange={(e) => setProductNameEn(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Oven Baked Rice Pudding" />
+                      </div>
+                    )}
+                    {cafeDetails && cafeDetails.has_spanish && (
+                      <div className="mb-4">
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İspanyolca)</label>
+                        <input type="text" value={productNameEs} onChange={(e) => setProductNameEs(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Arroz con leche al horno" />
+                      </div>
+                    )}
+                    {cafeDetails && cafeDetails.has_arabic && (
+                      <div className="mb-4">
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (Arapça)</label>
+                        <input type="text" value={productNameAr} onChange={(e) => setProductNameAr(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: أرز بالحليب في الفرن" dir="rtl" />
                       </div>
                     )}
                     <div className="mb-4">
-                      <label className="block text-sm text-slate-400 mb-1">Fiyat (TL)</label>
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">Fiyat (TL)</label>
                       <input type="number" step="0.01" required value={productPrice} onChange={(e) => setProductPrice(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="120.50" />
                     </div>
                     <div className="mb-4">
-                      <label className="block text-sm text-slate-400 mb-1">Açıklama (İsteğe Bağlı)</label>
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İsteğe Bağlı)</label>
                       <textarea value={productDescription} onChange={(e) => setProductDescription(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="İçindekiler vb."></textarea>
                     </div>
                     {cafeDetails && cafeDetails.has_english && (
                       <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1">Açıklama (İngilizce - İsteğe Bağlı)</label>
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İngilizce - İsteğe Bağlı)</label>
                         <textarea value={productDescriptionEn} onChange={(e) => setProductDescriptionEn(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="Ingredients etc."></textarea>
+                      </div>
+                    )}
+                    {cafeDetails && cafeDetails.has_spanish && (
+                      <div className="mb-4">
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İspanyolca - İsteğe Bağlı)</label>
+                        <textarea value={productDescriptionEs} onChange={(e) => setProductDescriptionEs(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="Ingredientes etc."></textarea>
+                      </div>
+                    )}
+                    {cafeDetails && cafeDetails.has_arabic && (
+                      <div className="mb-4">
+                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (Arapça - İsteğe Bağlı)</label>
+                        <textarea value={productDescriptionAr} onChange={(e) => setProductDescriptionAr(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="المكونات وما إلى ذلك" dir="rtl"></textarea>
                       </div>
                     )}
                     <div className="mb-6">
@@ -990,7 +1068,7 @@ export default function CafeDetail() {
         {/* ÜRÜN DÜZENLEME MODALI */}
         {isEditProductModalOpen && selectedProductToEdit && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl">
+            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white">Ürünü Düzenle</h2>
                 <button onClick={() => setIsEditProductModalOpen(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
@@ -1012,10 +1090,32 @@ export default function CafeDetail() {
                     <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İngilizce)</label>
                     <input 
                       type="text" 
-                      required 
                       value={editProductNameEn} 
                       onChange={(e) => setEditProductNameEn(e.target.value)} 
                       className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                    />
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_spanish && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İspanyolca)</label>
+                    <input 
+                      type="text" 
+                      value={editProductNameEs} 
+                      onChange={(e) => setEditProductNameEs(e.target.value)} 
+                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                    />
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_arabic && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (Arapça)</label>
+                    <input 
+                      type="text" 
+                      value={editProductNameAr} 
+                      onChange={(e) => setEditProductNameAr(e.target.value)} 
+                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                      dir="rtl"
                     />
                   </div>
                 )}
@@ -1047,6 +1147,29 @@ export default function CafeDetail() {
                       onChange={(e) => setEditProductDescriptionEn(e.target.value)} 
                       className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
                       rows="3"
+                    ></textarea>
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_spanish && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İspanyolca)</label>
+                    <textarea 
+                      value={editProductDescriptionEs} 
+                      onChange={(e) => setEditProductDescriptionEs(e.target.value)} 
+                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                      rows="3"
+                    ></textarea>
+                  </div>
+                )}
+                {cafeDetails && cafeDetails.has_arabic && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (Arapça)</label>
+                    <textarea 
+                      value={editProductDescriptionAr} 
+                      onChange={(e) => setEditProductDescriptionAr(e.target.value)} 
+                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                      rows="3"
+                      dir="rtl"
                     ></textarea>
                   </div>
                 )}

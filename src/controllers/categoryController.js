@@ -18,10 +18,10 @@ const getCategoriesByCafeId = async (req, res) => {
 // 2. Yeni kategori ekle (POST) - [KORUMALI]
 const createCategory = async (req, res) => {
   try {
-    const { cafe_id, name, name_en, order_index } = req.body;
+    const { cafe_id, name, name_en, name_es, name_ar, order_index } = req.body;
     const newCategory = await pool.query(
-      'INSERT INTO categories (cafe_id, name, name_en, order_index) VALUES ($1, $2, $3, $4) RETURNING *',
-      [cafe_id, name, name_en || null, order_index || 0]
+      'INSERT INTO categories (cafe_id, name, name_en, name_es, name_ar, order_index) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [cafe_id, name, name_en || null, name_es || null, name_ar || null, order_index || 0]
     );
     res.json(newCategory.rows[0]);
   } catch (err) {
