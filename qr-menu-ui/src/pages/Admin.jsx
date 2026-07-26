@@ -218,27 +218,31 @@ export default function Admin() {
                   <Link 
                     key={cafe.id} 
                     to={`/admin/cafe/${cafe.id}`}
-                    className="relative bg-slate-800 p-6 rounded-xl border border-slate-600 shadow-lg hover:border-blue-500 transition-colors cursor-pointer group block"
+                    className="relative bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg hover:border-blue-500 hover:bg-slate-750 hover:shadow-blue-900/20 transition-all cursor-pointer group block"
                   >
                     
                     <button 
+                      type="button"
                       onClick={(e) => {
-                        e.preventDefault(); 
-                        handleDeleteCafe(cafe.id);
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                        if (window.confirm(`"${cafe.name}" kafesini ve ilgili verileri silmek istediğinizden emin misiniz?`)) {
+                          handleDeleteCafe(cafe.id);
+                        }
                       }}
-                      className="absolute top-4 right-4 text-slate-500 hover:text-red-500 transition-colors z-10"
+                      className="absolute top-4 right-4 text-slate-500 hover:text-red-400 hover:bg-slate-700/50 p-1.5 rounded-lg transition-colors z-10"
                       title="Kafeyi Sil"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
 
-                    <h3 className="text-2xl font-bold mb-2 pr-8">{cafe.name}</h3>
-                    <div className="text-xs text-slate-400 bg-slate-900 p-3 rounded border border-slate-700 space-y-1">
-                      <div>Bağlantı: <span className="text-blue-400">/{cafe.slug}</span></div>
+                    <h3 className="text-2xl font-bold mb-2 pr-8 text-white group-hover:text-blue-400 transition-colors">{cafe.name}</h3>
+                    <div className="text-xs text-slate-400 bg-slate-900 p-3 rounded-lg border border-slate-700 space-y-1">
+                      <div>Bağlantı: <span className="text-blue-400 font-mono">/{cafe.slug}</span></div>
                       {cafe.custom_domain && (
-                        <div>Alan Adı: <span className="text-emerald-400">{cafe.custom_domain}</span></div>
+                        <div>Alan Adı: <span className="text-emerald-400 font-mono">{cafe.custom_domain}</span></div>
                       )}
                     </div>
                   </Link>
