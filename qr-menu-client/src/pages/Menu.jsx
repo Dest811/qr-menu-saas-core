@@ -144,27 +144,22 @@ export default function Menu() {
   };
 
   const scrollToCategory = (categoryId) => {
-    setActiveCategory(categoryId);
+    // 1. Önce Observer'ı ANINDA senkron olarak sustur
     isManualScroll.current = true;
 
-    const element = document.getElementById(`category-${categoryId}`) || categoryRefs.current[categoryId];
-    if (element) {
-      try {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (err) {
-        const offset = 130; 
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
+    // 2. Butonu görsel olarak aktif yap
+    setActiveCategory(categoryId);
+
+    // 3. DOM elemanını bul ve anında scrollIntoView tetikle
+    const targetElement = document.getElementById(`category-${categoryId}`) || categoryRefs.current[categoryId];
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    // 4. Kaydırma animasyonu bittikten sonra Observer'ı tekrar serbest bırak
     setTimeout(() => {
       isManualScroll.current = false;
-    }, 850);
+    }, 1000);
   };
 
   if (isLoading) {
