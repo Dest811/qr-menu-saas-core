@@ -50,10 +50,20 @@ async function run() {
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_english BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_spanish BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_arabic BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "isFrenchActive" BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_french BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "isPortugueseActive" BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_portuguese BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "isRussianActive" BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_russian BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "isGermanActive" BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_german BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "isPersianActive" BOOLEAN DEFAULT FALSE;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_persian BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text TEXT;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_en TEXT;
       `);
-      console.log("✓ Cafe columns ('coverImage', 'working_hours', 'maps_url', 'instagram_url', 'phone_number', 'has_english', 'has_spanish', 'has_arabic', 'campaign_text') verified / added.");
+      console.log("✓ Cafe columns verified / added.");
     } catch (columnErr) {
       console.warn("Columns check failed:", columnErr.message);
     }
@@ -96,10 +106,25 @@ async function run() {
         ALTER TABLE products ADD COLUMN IF NOT EXISTS description_es TEXT;
         ALTER TABLE products ADD COLUMN IF NOT EXISTS name_ar VARCHAR(255);
         ALTER TABLE products ADD COLUMN IF NOT EXISTS description_ar TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_fr VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_fr TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_pt VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_pt TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_ru VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_ru TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_de VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_de TEXT;
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS name_fa VARCHAR(255);
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS description_fa TEXT;
 
         ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_en VARCHAR(255);
         ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_es VARCHAR(255);
         ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_ar VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_fr VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_pt VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_ru VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_de VARCHAR(255);
+        ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_fa VARCHAR(255);
       `);
       console.log("✓ Multi-language columns verified on products and categories.");
     } catch (langColErr) {

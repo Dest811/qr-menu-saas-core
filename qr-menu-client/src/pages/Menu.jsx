@@ -177,9 +177,14 @@ export default function Menu() {
   // Dinamik olarak aktif dilleri belirle
   const availableLanguages = [
     { code: 'tr', label: 'TR', fullName: 'Türkçe (TR)' },
-    ...(cafe?.has_english ? [{ code: 'en', label: 'EN', fullName: 'English (EN)' }] : []),
-    ...(cafe?.has_spanish ? [{ code: 'es', label: 'ES', fullName: 'Español (ES)' }] : []),
-    ...(cafe?.has_arabic ? [{ code: 'ar', label: 'AR', fullName: 'العربية (AR)' }] : []),
+    ...(cafe?.has_english || cafe?.isEnglishActive ? [{ code: 'en', label: 'EN', fullName: 'English (EN)' }] : []),
+    ...(cafe?.has_spanish || cafe?.isSpanishActive ? [{ code: 'es', label: 'ES', fullName: 'Español (ES)' }] : []),
+    ...(cafe?.has_arabic || cafe?.isArabicActive ? [{ code: 'ar', label: 'AR', fullName: 'العربية (AR)' }] : []),
+    ...(cafe?.has_french || cafe?.isFrenchActive ? [{ code: 'fr', label: 'FR', fullName: 'Français (FR)' }] : []),
+    ...(cafe?.has_portuguese || cafe?.isPortugueseActive ? [{ code: 'pt', label: 'PT', fullName: 'Português (PT)' }] : []),
+    ...(cafe?.has_russian || cafe?.isRussianActive ? [{ code: 'ru', label: 'RU', fullName: 'Русский (RU)' }] : []),
+    ...(cafe?.has_german || cafe?.isGermanActive ? [{ code: 'de', label: 'DE', fullName: 'Deutsch (DE)' }] : []),
+    ...(cafe?.has_persian || cafe?.isPersianActive ? [{ code: 'fa', label: 'FA', fullName: 'فارسی (FA)' }] : []),
   ];
 
   // Çoklu dil metin yardımcıları
@@ -188,6 +193,11 @@ export default function Menu() {
     if (lang === 'en' && category.name_en) return category.name_en;
     if (lang === 'es' && category.name_es) return category.name_es;
     if (lang === 'ar' && category.name_ar) return category.name_ar;
+    if (lang === 'fr' && category.name_fr) return category.name_fr;
+    if (lang === 'pt' && category.name_pt) return category.name_pt;
+    if (lang === 'ru' && category.name_ru) return category.name_ru;
+    if (lang === 'de' && category.name_de) return category.name_de;
+    if (lang === 'fa' && category.name_fa) return category.name_fa;
     return category.name;
   };
 
@@ -196,6 +206,11 @@ export default function Menu() {
     if (lang === 'en' && product.name_en) return product.name_en;
     if (lang === 'es' && product.name_es) return product.name_es;
     if (lang === 'ar' && product.name_ar) return product.name_ar;
+    if (lang === 'fr' && product.name_fr) return product.name_fr;
+    if (lang === 'pt' && product.name_pt) return product.name_pt;
+    if (lang === 'ru' && product.name_ru) return product.name_ru;
+    if (lang === 'de' && product.name_de) return product.name_de;
+    if (lang === 'fa' && product.name_fa) return product.name_fa;
     return product.name;
   };
 
@@ -204,6 +219,11 @@ export default function Menu() {
     if (lang === 'en' && product.description_en) return product.description_en;
     if (lang === 'es' && product.description_es) return product.description_es;
     if (lang === 'ar' && product.description_ar) return product.description_ar;
+    if (lang === 'fr' && product.description_fr) return product.description_fr;
+    if (lang === 'pt' && product.description_pt) return product.description_pt;
+    if (lang === 'ru' && product.description_ru) return product.description_ru;
+    if (lang === 'de' && product.description_de) return product.description_de;
+    if (lang === 'fa' && product.description_fa) return product.description_fa;
     return product.description;
   };
 
@@ -212,6 +232,11 @@ export default function Menu() {
     if (lang === 'en' && cafe.campaign_text_en) return cafe.campaign_text_en;
     if (lang === 'es' && cafe.campaign_text_es) return cafe.campaign_text_es;
     if (lang === 'ar' && cafe.campaign_text_ar) return cafe.campaign_text_ar;
+    if (lang === 'fr' && cafe.campaign_text_fr) return cafe.campaign_text_fr;
+    if (lang === 'pt' && cafe.campaign_text_pt) return cafe.campaign_text_pt;
+    if (lang === 'ru' && cafe.campaign_text_ru) return cafe.campaign_text_ru;
+    if (lang === 'de' && cafe.campaign_text_de) return cafe.campaign_text_de;
+    if (lang === 'fa' && cafe.campaign_text_fa) return cafe.campaign_text_fa;
     return cafe.campaign_text;
   };
 
@@ -251,6 +276,51 @@ export default function Menu() {
       soldOut: 'نفدت الكمية',
       workingHours: 'ساعات العمل:',
       contact: 'اتصال:'
+    },
+    fr: {
+      getDirections: 'Obtenir Itinéraire',
+      digitalMenu: 'Menu Numérique',
+      menuSoon: 'Le menu sera bientôt disponible.',
+      noProducts: 'Aucun produit dans cette catégorie.',
+      soldOut: 'ÉPUISÉ',
+      workingHours: 'Heures d\'ouverture:',
+      contact: 'Contact:'
+    },
+    pt: {
+      getDirections: 'Obter Direções',
+      digitalMenu: 'Menu Digital',
+      menuSoon: 'O menu estará disponível em breve.',
+      noProducts: 'Nenhum produto nesta categoria.',
+      soldOut: 'ESGOTADO',
+      workingHours: 'Horário de Funcionamento:',
+      contact: 'Contato:'
+    },
+    ru: {
+      getDirections: 'Маршрут',
+      digitalMenu: 'Цифровое Меню',
+      menuSoon: 'Меню скоро будет доступно.',
+      noProducts: 'В этой категории пока нет товаров.',
+      soldOut: 'РАСПОДАН',
+      workingHours: 'Часы работы:',
+      contact: 'Контакты:'
+    },
+    de: {
+      getDirections: 'Route Anzeigen',
+      digitalMenu: 'Digitales Menü',
+      menuSoon: 'Das Menü ist bald verfügbar.',
+      noProducts: 'Noch keine Produkte in dieser Kategorie.',
+      soldOut: 'AUSVERKAUFT',
+      workingHours: 'Öffnungszeiten:',
+      contact: 'Kontakt:'
+    },
+    fa: {
+      getDirections: 'مسیریابی',
+      digitalMenu: 'منوی دیجیتال',
+      menuSoon: 'منو به‌زودی در دسترس خواهد بود.',
+      noProducts: 'هنوز محصولی در این دسته‌بندی وجود ندارد.',
+      soldOut: 'تمام شد',
+      workingHours: 'ساعات کاری:',
+      contact: 'تماس:'
     }
   };
   const t = uiTranslations[lang] || uiTranslations.tr;
@@ -285,7 +355,7 @@ export default function Menu() {
     <div 
       className="min-h-screen font-sans pb-24 transition-colors duration-500 animate-fade-in" 
       style={{ backgroundColor: bgColor }}
-      dir={lang === 'ar' ? 'rtl' : 'ltr'}
+      dir={lang === 'ar' || lang === 'fa' ? 'rtl' : 'ltr'}
     >
       
       {/* HERO SECTION */}

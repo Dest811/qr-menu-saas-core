@@ -6,10 +6,15 @@ const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
 // Desteklenen Diller Konfigürasyonu (Gelecekte yeni bir dil eklendiğinde sadece buraya 1 nesne eklenir)
 const SUPPORTED_LANGUAGES = [
-  { code: 'tr', key: '', name: 'Türkçe', isDefault: true, placeholder: 'Örn: Fırın Sütlaç', descPlaceholder: 'İçindekiler vb.' },
-  { code: 'en', key: '_en', settingKey: 'has_english', name: 'İngilizce', placeholder: 'Örn: Oven Baked Rice Pudding', descPlaceholder: 'Ingredients etc.' },
-  { code: 'es', key: '_es', settingKey: 'has_spanish', name: 'İspanyolca', placeholder: 'Örn: Arroz con leche al horno', descPlaceholder: 'Ingredientes etc.' },
-  { code: 'ar', key: '_ar', settingKey: 'has_arabic', name: 'Arapça', placeholder: 'Örn: أرز بالحليب في الفرن', descPlaceholder: 'المكونات وما إلى ذلك', dir: 'rtl' },
+  { code: 'tr', key: '', apiKey: 'isTurkishActive', settingKey: 'has_turkish', name: 'Türkçe', isDefault: true, placeholder: 'Örn: Fırın Sütlaç', descPlaceholder: 'İçindekiler vb.' },
+  { code: 'en', key: '_en', apiKey: 'isEnglishActive', settingKey: 'has_english', name: 'İngilizce', placeholder: 'Örn: Oven Baked Rice Pudding', descPlaceholder: 'Ingredients etc.' },
+  { code: 'es', key: '_es', apiKey: 'isSpanishActive', settingKey: 'has_spanish', name: 'İspanyolca', placeholder: 'Örn: Arroz con leche al horno', descPlaceholder: 'Ingredientes etc.' },
+  { code: 'ar', key: '_ar', apiKey: 'isArabicActive', settingKey: 'has_arabic', name: 'Arapça', placeholder: 'Örn: أرز بالحليب في الفرن', descPlaceholder: 'المكونات وما إلى ذلك', dir: 'rtl' },
+  { code: 'fr', key: '_fr', apiKey: 'isFrenchActive', settingKey: 'has_french', name: 'Fransızca (FR)', placeholder: 'Örn: Riz au lait au four', descPlaceholder: 'Ingrédients etc.' },
+  { code: 'pt', key: '_pt', apiKey: 'isPortugueseActive', settingKey: 'has_portuguese', name: 'Portekizce (PT)', placeholder: 'Örn: Arroz doce no forno', descPlaceholder: 'Ingredientes etc.' },
+  { code: 'ru', key: '_ru', apiKey: 'isRussianActive', settingKey: 'has_russian', name: 'Rusça (RU)', placeholder: 'Örn: Запеченный рисовый пудинг', descPlaceholder: 'Ингредиенты и т.д.' },
+  { code: 'de', key: '_de', apiKey: 'isGermanActive', settingKey: 'has_german', name: 'Almanca (DE)', placeholder: 'Örn: Ofen-Milchreis', descPlaceholder: 'Zutaten usw.' },
+  { code: 'fa', key: '_fa', apiKey: 'isPersianActive', settingKey: 'has_persian', name: 'Farsça (FA)', placeholder: 'Örn: شیربرنج قالبی', descPlaceholder: 'ترکیبات و غیره', dir: 'rtl' },
 ];
 
 export default function CafeDetail() {
@@ -35,11 +40,21 @@ export default function CafeDetail() {
     name_en: '',
     name_es: '',
     name_ar: '',
+    name_fr: '',
+    name_pt: '',
+    name_ru: '',
+    name_de: '',
+    name_fa: '',
     price: '',
     description: '',
     description_en: '',
     description_es: '',
     description_ar: '',
+    description_fr: '',
+    description_pt: '',
+    description_ru: '',
+    description_de: '',
+    description_fa: '',
     image_url: '',
   };
   const [productFormData, setProductFormData] = useState(initialProductFormData);
@@ -59,11 +74,21 @@ export default function CafeDetail() {
     name_en: '',
     name_es: '',
     name_ar: '',
+    name_fr: '',
+    name_pt: '',
+    name_ru: '',
+    name_de: '',
+    name_fa: '',
     price: '',
     description: '',
     description_en: '',
     description_es: '',
     description_ar: '',
+    description_fr: '',
+    description_pt: '',
+    description_ru: '',
+    description_de: '',
+    description_fa: '',
     image_url: '',
   };
   const [editProductFormData, setEditProductFormData] = useState(initialEditFormData);
@@ -92,6 +117,16 @@ export default function CafeDetail() {
     has_english: false,
     has_spanish: false,
     has_arabic: false,
+    isFrenchActive: false,
+    has_french: false,
+    isPortugueseActive: false,
+    has_portuguese: false,
+    isRussianActive: false,
+    has_russian: false,
+    isGermanActive: false,
+    has_german: false,
+    isPersianActive: false,
+    has_persian: false,
     campaign_text: '',
     campaign_text_en: ''
   });
@@ -100,7 +135,7 @@ export default function CafeDetail() {
 
   // Dinamik Aktif Diller Dizisi (Türkçe sabit, diğerleri ayarlara bağlı)
   const activeLanguages = SUPPORTED_LANGUAGES.filter(
-    (lang) => lang.isDefault || (cafeDetails && cafeDetails[lang.settingKey])
+    (lang) => lang.isDefault || (cafeDetails && (cafeDetails[lang.apiKey] || cafeDetails[lang.settingKey]))
   );
 
   const getHeaders = (extra = {}) => {
@@ -143,6 +178,16 @@ export default function CafeDetail() {
           has_english: data.has_english || false,
           has_spanish: data.has_spanish || false,
           has_arabic: data.has_arabic || false,
+          isFrenchActive: data.isFrenchActive || data.has_french || false,
+          has_french: data.has_french || data.isFrenchActive || false,
+          isPortugueseActive: data.isPortugueseActive || data.has_portuguese || false,
+          has_portuguese: data.has_portuguese || data.isPortugueseActive || false,
+          isRussianActive: data.isRussianActive || data.has_russian || false,
+          has_russian: data.has_russian || data.isRussianActive || false,
+          isGermanActive: data.isGermanActive || data.has_german || false,
+          has_german: data.has_german || data.isGermanActive || false,
+          isPersianActive: data.isPersianActive || data.has_persian || false,
+          has_persian: data.has_persian || data.isPersianActive || false,
           campaign_text: data.campaign_text || '',
           campaign_text_en: data.campaign_text_en || ''
         });
@@ -176,6 +221,16 @@ export default function CafeDetail() {
         has_english: branding.has_english || false,
         has_spanish: branding.has_spanish || false,
         has_arabic: branding.has_arabic || false,
+        isFrenchActive: branding.isFrenchActive || branding.has_french || false,
+        has_french: branding.has_french || branding.isFrenchActive || false,
+        isPortugueseActive: branding.isPortugueseActive || branding.has_portuguese || false,
+        has_portuguese: branding.has_portuguese || branding.isPortugueseActive || false,
+        isRussianActive: branding.isRussianActive || branding.has_russian || false,
+        has_russian: branding.has_russian || branding.isRussianActive || false,
+        isGermanActive: branding.isGermanActive || branding.has_german || false,
+        has_german: branding.has_german || branding.isGermanActive || false,
+        isPersianActive: branding.isPersianActive || branding.has_persian || false,
+        has_persian: branding.has_persian || branding.isPersianActive || false,
         campaign_text: branding.campaign_text || '',
         campaign_text_en: branding.campaign_text_en || ''
       };
@@ -364,10 +419,20 @@ export default function CafeDetail() {
           name_en: productFormData.name_en || null,
           name_es: productFormData.name_es || null,
           name_ar: productFormData.name_ar || null,
+          name_fr: productFormData.name_fr || null,
+          name_pt: productFormData.name_pt || null,
+          name_ru: productFormData.name_ru || null,
+          name_de: productFormData.name_de || null,
+          name_fa: productFormData.name_fa || null,
           description: productFormData.description || null,
           description_en: productFormData.description_en || null,
           description_es: productFormData.description_es || null,
           description_ar: productFormData.description_ar || null,
+          description_fr: productFormData.description_fr || null,
+          description_pt: productFormData.description_pt || null,
+          description_ru: productFormData.description_ru || null,
+          description_de: productFormData.description_de || null,
+          description_fa: productFormData.description_fa || null,
           price: parseFloat(productFormData.price),
           image_url: productFormData.image_url || null,
           is_active: true
@@ -427,11 +492,21 @@ export default function CafeDetail() {
       name_en: product.name_en || '',
       name_es: product.name_es || '',
       name_ar: product.name_ar || '',
+      name_fr: product.name_fr || '',
+      name_pt: product.name_pt || '',
+      name_ru: product.name_ru || '',
+      name_de: product.name_de || '',
+      name_fa: product.name_fa || '',
       price: product.price !== undefined ? product.price : '',
       description: product.description || '',
       description_en: product.description_en || '',
       description_es: product.description_es || '',
       description_ar: product.description_ar || '',
+      description_fr: product.description_fr || '',
+      description_pt: product.description_pt || '',
+      description_ru: product.description_ru || '',
+      description_de: product.description_de || '',
+      description_fa: product.description_fa || '',
       image_url: product.image_url || '',
     });
     setIsEditProductModalOpen(true);
@@ -449,10 +524,20 @@ export default function CafeDetail() {
           name_en: editProductFormData.name_en || null,
           name_es: editProductFormData.name_es || null,
           name_ar: editProductFormData.name_ar || null,
+          name_fr: editProductFormData.name_fr || null,
+          name_pt: editProductFormData.name_pt || null,
+          name_ru: editProductFormData.name_ru || null,
+          name_de: editProductFormData.name_de || null,
+          name_fa: editProductFormData.name_fa || null,
           description: editProductFormData.description || null,
           description_en: editProductFormData.description_en || null,
           description_es: editProductFormData.description_es || null,
           description_ar: editProductFormData.description_ar || null,
+          description_fr: editProductFormData.description_fr || null,
+          description_pt: editProductFormData.description_pt || null,
+          description_ru: editProductFormData.description_ru || null,
+          description_de: editProductFormData.description_de || null,
+          description_fa: editProductFormData.description_fa || null,
           price: parseFloat(editProductFormData.price),
           image_url: editProductFormData.image_url || null
         }),
@@ -676,6 +761,7 @@ export default function CafeDetail() {
                     {activeLanguages.map((langConfig) => {
                       const fieldKey = `name${langConfig.key}`;
                       const labelText = langConfig.isDefault ? "Ürün Adı" : `Ürün Adı (${langConfig.name})`;
+                      const isRtl = langConfig.dir === 'rtl';
                       return (
                         <div key={fieldKey}>
                           <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
@@ -684,9 +770,9 @@ export default function CafeDetail() {
                             required={langConfig.isDefault}
                             value={productFormData[fieldKey] || ''} 
                             onChange={(e) => handleProductFormChange(fieldKey, e.target.value)} 
-                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:outline-none focus:border-emerald-500" 
+                            className={`w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:outline-none focus:border-emerald-500 ${isRtl ? 'text-right' : ''}`} 
                             placeholder={langConfig.placeholder || "Örn: Fırın Sütlaç"} 
-                            dir={langConfig.dir || 'ltr'}
+                            dir={langConfig.dir || 'auto'}
                           />
                         </div>
                       );
@@ -712,16 +798,17 @@ export default function CafeDetail() {
                       const labelText = langConfig.isDefault 
                         ? "Açıklama (İsteğe Bağlı)" 
                         : `Açıklama (${langConfig.name} - İsteğe Bağlı)`;
+                      const isRtl = langConfig.dir === 'rtl';
                       return (
                         <div key={fieldKey}>
                           <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
                           <textarea 
                             value={productFormData[fieldKey] || ''} 
                             onChange={(e) => handleProductFormChange(fieldKey, e.target.value)} 
-                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm focus:outline-none focus:border-emerald-500" 
+                            className={`w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm focus:outline-none focus:border-emerald-500 ${isRtl ? 'text-right' : ''}`} 
                             rows="2" 
                             placeholder={langConfig.descPlaceholder || "İçindekiler vb."}
-                            dir={langConfig.dir || 'ltr'}
+                            dir={langConfig.dir || 'auto'}
                           ></textarea>
                         </div>
                       );
@@ -981,6 +1068,66 @@ export default function CafeDetail() {
                       Arapça Menü Desteğini Aç
                     </span>
                   </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.isFrenchActive || branding.has_french || false}
+                      onChange={(e) => setBranding({...branding, isFrenchActive: e.target.checked, has_french: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Fransızca (FR) Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.isPortugueseActive || branding.has_portuguese || false}
+                      onChange={(e) => setBranding({...branding, isPortugueseActive: e.target.checked, has_portuguese: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Portekizce (PT) Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.isRussianActive || branding.has_russian || false}
+                      onChange={(e) => setBranding({...branding, isRussianActive: e.target.checked, has_russian: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Rusça (RU) Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.isGermanActive || branding.has_german || false}
+                      onChange={(e) => setBranding({...branding, isGermanActive: e.target.checked, has_german: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Almanca (DE) Menü Desteğini Aç
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    <input 
+                      type="checkbox" 
+                      checked={branding.isPersianActive || branding.has_persian || false}
+                      onChange={(e) => setBranding({...branding, isPersianActive: e.target.checked, has_persian: e.target.checked})}
+                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-slate-800"
+                    />
+                    <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                      Farsça (FA) Menü Desteğini Aç
+                    </span>
+                  </label>
                 </div>
 
                 {/* Kampanya Bannerı Toggle */}
@@ -1110,6 +1257,7 @@ export default function CafeDetail() {
                 {activeLanguages.map((langConfig) => {
                   const fieldKey = `name${langConfig.key}`;
                   const labelText = langConfig.isDefault ? "Ürün Adı" : `Ürün Adı (${langConfig.name})`;
+                  const isRtl = langConfig.dir === 'rtl';
                   return (
                     <div key={fieldKey}>
                       <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
@@ -1118,8 +1266,8 @@ export default function CafeDetail() {
                         required={langConfig.isDefault}
                         value={editProductFormData[fieldKey] || ''} 
                         onChange={(e) => handleEditProductFormChange(fieldKey, e.target.value)} 
-                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
-                        dir={langConfig.dir || 'ltr'}
+                        className={`w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500 ${isRtl ? 'text-right' : ''}`} 
+                        dir={langConfig.dir || 'auto'}
                       />
                     </div>
                   );
@@ -1142,15 +1290,16 @@ export default function CafeDetail() {
                 {activeLanguages.map((langConfig) => {
                   const fieldKey = `description${langConfig.key}`;
                   const labelText = langConfig.isDefault ? "Açıklama" : `Açıklama (${langConfig.name})`;
+                  const isRtl = langConfig.dir === 'rtl';
                   return (
                     <div key={fieldKey}>
                       <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
                       <textarea 
                         value={editProductFormData[fieldKey] || ''} 
                         onChange={(e) => handleEditProductFormChange(fieldKey, e.target.value)} 
-                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                        className={`w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500 ${isRtl ? 'text-right' : ''}`} 
                         rows="3"
-                        dir={langConfig.dir || 'ltr'}
+                        dir={langConfig.dir || 'auto'}
                       ></textarea>
                     </div>
                   );

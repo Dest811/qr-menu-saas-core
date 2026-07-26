@@ -75,9 +75,29 @@ const createCafe = async (req, res) => {
     ? req.body.has_arabic 
     : (req.body.isArabicActive !== undefined ? req.body.isArabicActive : (req.body.hasArabic !== undefined ? req.body.hasArabic : false));
 
+  const has_french = req.body.has_french !== undefined 
+    ? req.body.has_french 
+    : (req.body.isFrenchActive !== undefined ? req.body.isFrenchActive : (req.body.hasFrench !== undefined ? req.body.hasFrench : false));
+
+  const has_portuguese = req.body.has_portuguese !== undefined 
+    ? req.body.has_portuguese 
+    : (req.body.isPortugueseActive !== undefined ? req.body.isPortugueseActive : (req.body.hasPortuguese !== undefined ? req.body.hasPortuguese : false));
+
+  const has_russian = req.body.has_russian !== undefined 
+    ? req.body.has_russian 
+    : (req.body.isRussianActive !== undefined ? req.body.isRussianActive : (req.body.hasRussian !== undefined ? req.body.hasRussian : false));
+
+  const has_german = req.body.has_german !== undefined 
+    ? req.body.has_german 
+    : (req.body.isGermanActive !== undefined ? req.body.isGermanActive : (req.body.hasGerman !== undefined ? req.body.hasGerman : false));
+
+  const has_persian = req.body.has_persian !== undefined 
+    ? req.body.has_persian 
+    : (req.body.isPersianActive !== undefined ? req.body.isPersianActive : (req.body.hasPersian !== undefined ? req.body.hasPersian : false));
+
   try {
     const newCafe = await pool.query(
-      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english, has_spanish, has_arabic, campaign_text, campaign_text_en) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *',
+      'INSERT INTO cafes (name, slug, logo_url, hero_image, "coverImage", primary_color, accent_color, bg_color, custom_domain, working_hours, maps_url, instagram_url, phone_number, has_english, has_spanish, has_arabic, "isFrenchActive", has_french, "isPortugueseActive", has_portuguese, "isRussianActive", has_russian, "isGermanActive", has_german, "isPersianActive", has_persian, campaign_text, campaign_text_en) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *',
       [
         name, 
         slug, 
@@ -95,6 +115,16 @@ const createCafe = async (req, res) => {
         Boolean(has_english),
         Boolean(has_spanish),
         Boolean(has_arabic),
+        Boolean(has_french),
+        Boolean(has_french),
+        Boolean(has_portuguese),
+        Boolean(has_portuguese),
+        Boolean(has_russian),
+        Boolean(has_russian),
+        Boolean(has_german),
+        Boolean(has_german),
+        Boolean(has_persian),
+        Boolean(has_persian),
         campaign_text || null,
         campaign_text_en || null
       ]
@@ -127,8 +157,28 @@ const updateCafe = async (req, res) => {
       ? req.body.has_arabic 
       : (req.body.isArabicActive !== undefined ? req.body.isArabicActive : (req.body.hasArabic !== undefined ? req.body.hasArabic : false));
 
+    const has_french = req.body.has_french !== undefined 
+      ? req.body.has_french 
+      : (req.body.isFrenchActive !== undefined ? req.body.isFrenchActive : (req.body.hasFrench !== undefined ? req.body.hasFrench : false));
+
+    const has_portuguese = req.body.has_portuguese !== undefined 
+      ? req.body.has_portuguese 
+      : (req.body.isPortugueseActive !== undefined ? req.body.isPortugueseActive : (req.body.hasPortuguese !== undefined ? req.body.hasPortuguese : false));
+
+    const has_russian = req.body.has_russian !== undefined 
+      ? req.body.has_russian 
+      : (req.body.isRussianActive !== undefined ? req.body.isRussianActive : (req.body.hasRussian !== undefined ? req.body.hasRussian : false));
+
+    const has_german = req.body.has_german !== undefined 
+      ? req.body.has_german 
+      : (req.body.isGermanActive !== undefined ? req.body.isGermanActive : (req.body.hasGerman !== undefined ? req.body.hasGerman : false));
+
+    const has_persian = req.body.has_persian !== undefined 
+      ? req.body.has_persian 
+      : (req.body.isPersianActive !== undefined ? req.body.isPersianActive : (req.body.hasPersian !== undefined ? req.body.hasPersian : false));
+
     const updateResult = await pool.query(
-      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11, has_spanish = $12, has_arabic = $13, campaign_text = $14, campaign_text_en = $15 WHERE id = $16 RETURNING *',
+      'UPDATE cafes SET hero_image = $1, "coverImage" = $2, primary_color = $3, accent_color = $4, bg_color = $5, custom_domain = $6, working_hours = $7, maps_url = $8, instagram_url = $9, phone_number = $10, has_english = $11, has_spanish = $12, has_arabic = $13, "isFrenchActive" = $14, has_french = $15, "isPortugueseActive" = $16, has_portuguese = $17, "isRussianActive" = $18, has_russian = $19, "isGermanActive" = $20, has_german = $21, "isPersianActive" = $22, has_persian = $23, campaign_text = $24, campaign_text_en = $25 WHERE id = $26 RETURNING *',
       [
         hero_image || null, 
         coverImage || null, 
@@ -143,6 +193,16 @@ const updateCafe = async (req, res) => {
         Boolean(has_english),
         Boolean(has_spanish),
         Boolean(has_arabic),
+        Boolean(has_french),
+        Boolean(has_french),
+        Boolean(has_portuguese),
+        Boolean(has_portuguese),
+        Boolean(has_russian),
+        Boolean(has_russian),
+        Boolean(has_german),
+        Boolean(has_german),
+        Boolean(has_persian),
+        Boolean(has_persian),
         campaign_text || null,
         campaign_text_en || null,
         id
