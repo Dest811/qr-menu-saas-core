@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import ImageWithSkeleton from '../components/ImageWithSkeleton';
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
 
@@ -286,7 +287,7 @@ export default function Menu() {
 
                       <div className="w-24 h-24 shrink-0 bg-slate-50 rounded-2xl overflow-hidden shadow-inner relative border border-slate-100 flex items-center justify-center text-3xl">
                         {product.image_url ? (
-                          <img 
+                          <ImageWithSkeleton 
                             src={product.image_url} 
                             alt={product.name} 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
@@ -368,11 +369,16 @@ export default function Menu() {
           >
             {/* Büyük Ürün Görseli */}
             {selectedProductDetail.image_url ? (
-              <div className="w-full h-72 relative bg-cover bg-center" style={{ backgroundImage: `url('${selectedProductDetail.image_url}')` }}>
+              <div className="w-full h-72 relative overflow-hidden">
+                <ImageWithSkeleton
+                  src={selectedProductDetail.image_url}
+                  alt={selectedProductDetail.name}
+                  className="w-full h-72 object-cover"
+                />
                 {/* Kapatma Butonu (X) */}
                 <button 
                   onClick={() => setSelectedProductDetail(null)}
-                  className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center text-xl font-bold backdrop-blur-sm transition-all hover:bg-black/70"
+                  className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center text-xl font-bold backdrop-blur-sm transition-all hover:bg-black/70 z-20"
                 >
                   &times;
                 </button>

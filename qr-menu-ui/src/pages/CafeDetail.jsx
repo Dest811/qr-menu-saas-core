@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import ImageWithSkeleton from '../components/ImageWithSkeleton';
 
 
 const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
@@ -619,7 +620,7 @@ export default function CafeDetail() {
                       <div className="flex flex-col gap-2">
                         {productImageUrl ? (
                           <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-2">
-                            <img src={productImageUrl} alt="Önizleme" className="w-12 h-12 object-cover rounded" />
+                            <ImageWithSkeleton src={productImageUrl} alt="Önizleme" className="w-12 h-12 object-cover rounded" />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs text-slate-400 truncate">{productImageUrl}</p>
                             </div>
@@ -671,7 +672,7 @@ export default function CafeDetail() {
                         <div key={product.id} className={`flex justify-between items-center p-4 rounded-lg border transition-all ${product.is_active ? 'bg-slate-800 border-slate-600' : 'bg-slate-900 border-red-900/50 opacity-75'}`}>
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-slate-700 rounded object-cover flex items-center justify-center text-xl overflow-hidden">
-                              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" /> : '🍽️'}
+                              {product.image_url ? <ImageWithSkeleton src={product.image_url} alt={product.name} className="w-full h-full object-cover" /> : '🍽️'}
                             </div>
                             <div>
                               <h4 className={`font-bold ${product.is_active ? 'text-white' : 'text-slate-500 line-through'}`}>{product.name}</h4>
@@ -1022,7 +1023,7 @@ export default function CafeDetail() {
                   <div className="flex flex-col gap-2">
                     {editProductImageUrl ? (
                       <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-3">
-                        <img src={editProductImageUrl} alt="Önizleme" className="w-14 h-14 object-cover rounded" />
+                        <ImageWithSkeleton src={editProductImageUrl} alt="Önizleme" className="w-14 h-14 object-cover rounded" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-slate-400 truncate">{editProductImageUrl}</p>
                         </div>
