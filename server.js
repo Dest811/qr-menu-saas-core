@@ -1,6 +1,7 @@
 require('dotenv').config(); // .env dosyasındaki gizli linki okumak için
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 
 // Veritabanı ve JWT şifrelerinin doğrulanması (Pre-flight Check)
@@ -45,6 +46,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
 app.use(express.json());
 

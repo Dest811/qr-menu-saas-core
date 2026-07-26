@@ -3,8 +3,12 @@ const jwt = require('jsonwebtoken');
 const login = (req, res) => {
   try {
     const { username, password } = req.body || {};
-    const adminUser = process.env.ADMIN_USERNAME || 'admin';
-    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminUser = process.env.ADMIN_USERNAME;
+    const adminPass = process.env.ADMIN_PASSWORD;
+
+    if (!adminUser || !adminPass) {
+      return res.status(500).json({ error: 'ADMIN_USERNAME veya ADMIN_PASSWORD environment değişkenleri tanımlanmamış!' });
+    }
 
     if (username === adminUser && password === adminPass) {
       // 24 saat geçerli JWT token üretiyoruz
