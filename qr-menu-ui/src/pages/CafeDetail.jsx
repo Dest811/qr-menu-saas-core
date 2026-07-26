@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import ImageWithSkeleton from '../components/ImageWithSkeleton';
-
-
-const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
+// Desteklenen Diller Konfigürasyonu (Gelecekte yeni bir dil eklendiğinde sadece buraya 1 nesne eklenir)
+const SUPPORTED_LANGUAGES = [
+  { code: 'tr', key: '', name: 'Türkçe', isDefault: true, placeholder: 'Örn: Fırın Sütlaç', descPlaceholder: 'İçindekiler vb.' },
+  { code: 'en', key: '_en', settingKey: 'has_english', name: 'İngilizce', placeholder: 'Örn: Oven Baked Rice Pudding', descPlaceholder: 'Ingredients etc.' },
+  { code: 'es', key: '_es', settingKey: 'has_spanish', name: 'İspanyolca', placeholder: 'Örn: Arroz con leche al horno', descPlaceholder: 'Ingredientes etc.' },
+  { code: 'ar', key: '_ar', settingKey: 'has_arabic', name: 'Arapça', placeholder: 'Örn: أرز بالحليب في الفرن', descPlaceholder: 'المكونات وما إلى ذلك', dir: 'rtl' },
+];
 
 export default function CafeDetail() {
   const { id } = useParams();
@@ -18,37 +19,53 @@ export default function CafeDetail() {
   const [categoryNameAr, setCategoryNameAr] = useState('');
   const [orderIndex, setOrderIndex] = useState(0);
 
-  // --- ÜRÜN STATE'LERİ ---
+  // --- ÜRÜN STATE'LERİ (Dinamik ve Ölçeklenebilir) ---
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   
-  // Ürün Form State'leri
-  const [productName, setProductName] = useState('');
-  const [productNameEn, setProductNameEn] = useState('');
-  const [productNameEs, setProductNameEs] = useState('');
-  const [productNameAr, setProductNameAr] = useState('');
-  const [productDescription, setProductDescription] = useState('');
-  const [productDescriptionEn, setProductDescriptionEn] = useState('');
-  const [productDescriptionEs, setProductDescriptionEs] = useState('');
-  const [productDescriptionAr, setProductDescriptionAr] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [productImageUrl, setProductImageUrl] = useState('');
+  const initialProductFormData = {
+    name: '',
+    name_en: '',
+    name_es: '',
+    name_ar: '',
+    price: '',
+    description: '',
+    description_en: '',
+    description_es: '',
+    description_ar: '',
+    image_url: '',
+  };
+  const [productFormData, setProductFormData] = useState(initialProductFormData);
+
+  const handleProductFormChange = (key, value) => {
+    setProductFormData(prev => ({ ...prev, [key]: value }));
+  };
+
   const [isAddUploading, setIsAddUploading] = useState(false);
 
-  // --- ÜRÜN DÜZENLEME STATE'LERİ ---
+  // --- ÜRÜN DÜZENLEME STATE'LERİ (Dinamik ve Ölçeklenebilir) ---
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [selectedProductToEdit, setSelectedProductToEdit] = useState(null);
-  const [editProductName, setEditProductName] = useState('');
-  const [editProductNameEn, setEditProductNameEn] = useState('');
-  const [editProductNameEs, setEditProductNameEs] = useState('');
-  const [editProductNameAr, setEditProductNameAr] = useState('');
-  const [editProductDescription, setEditProductDescription] = useState('');
-  const [editProductDescriptionEn, setEditProductDescriptionEn] = useState('');
-  const [editProductDescriptionEs, setEditProductDescriptionEs] = useState('');
-  const [editProductDescriptionAr, setEditProductDescriptionAr] = useState('');
-  const [editProductPrice, setEditProductPrice] = useState('');
-  const [editProductImageUrl, setEditProductImageUrl] = useState('');
+
+  const initialEditFormData = {
+    name: '',
+    name_en: '',
+    name_es: '',
+    name_ar: '',
+    price: '',
+    description: '',
+    description_en: '',
+    description_es: '',
+    description_ar: '',
+    image_url: '',
+  };
+  const [editProductFormData, setEditProductFormData] = useState(initialEditFormData);
+
+  const handleEditProductFormChange = (key, value) => {
+    setEditProductFormData(prev => ({ ...prev, [key]: value }));
+  };
+
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [isEditUploading, setIsEditUploading] = useState(false);
 
@@ -74,6 +91,11 @@ export default function CafeDetail() {
   });
   const [showExtraInfo, setShowExtraInfo] = useState(false);
   const [showCampaign, setShowCampaign] = useState(false);
+
+  // Dinamik Aktif Diller Dizisi (Türkçe sabit, diğerleri ayarlara bağlı)
+  const activeLanguages = SUPPORTED_LANGUAGES.filter(
+    (lang) => lang.isDefault || (cafeDetails && cafeDetails[lang.settingKey])
+  );
 
   const getHeaders = (extra = {}) => {
     const token = localStorage.getItem('adminToken');
@@ -308,9 +330,9 @@ export default function CafeDetail() {
       const publicUrl = data.url || data.publicUrl;
 
       if (type === 'add') {
-        setProductImageUrl(publicUrl);
+        setProductFormData(prev => ({ ...prev, image_url: publicUrl }));
       } else {
-        setEditProductImageUrl(publicUrl);
+        setEditProductFormData(prev => ({ ...prev, image_url: publicUrl }));
       }
     } catch (error) {
       console.error("Görsel yükleme hatası:", error);
@@ -332,16 +354,16 @@ export default function CafeDetail() {
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           category_id: selectedCategory.id,
-          name: productName,
-          name_en: productNameEn || null,
-          name_es: productNameEs || null,
-          name_ar: productNameAr || null,
-          description: productDescription,
-          description_en: productDescriptionEn || null,
-          description_es: productDescriptionEs || null,
-          description_ar: productDescriptionAr || null,
-          price: parseFloat(productPrice),
-          image_url: productImageUrl,
+          name: productFormData.name,
+          name_en: productFormData.name_en || null,
+          name_es: productFormData.name_es || null,
+          name_ar: productFormData.name_ar || null,
+          description: productFormData.description || null,
+          description_en: productFormData.description_en || null,
+          description_es: productFormData.description_es || null,
+          description_ar: productFormData.description_ar || null,
+          price: parseFloat(productFormData.price),
+          image_url: productFormData.image_url || null,
           is_active: true
         }),
       });
@@ -351,17 +373,7 @@ export default function CafeDetail() {
       if (response.ok) {
         const newProduct = await response.json();
         setProducts([newProduct, ...products]); 
-        
-        setProductName('');
-        setProductNameEn('');
-        setProductNameEs('');
-        setProductNameAr('');
-        setProductDescription('');
-        setProductDescriptionEn('');
-        setProductDescriptionEs('');
-        setProductDescriptionAr('');
-        setProductPrice('');
-        setProductImageUrl('');
+        setProductFormData(initialProductFormData);
       }
     } catch (error) {
       console.error("Error saving product:", error);
@@ -404,16 +416,18 @@ export default function CafeDetail() {
 
   const openProductEdit = (product) => {
     setSelectedProductToEdit(product);
-    setEditProductName(product.name || '');
-    setEditProductNameEn(product.name_en || '');
-    setEditProductNameEs(product.name_es || '');
-    setEditProductNameAr(product.name_ar || '');
-    setEditProductPrice(product.price);
-    setEditProductDescription(product.description || '');
-    setEditProductDescriptionEn(product.description_en || '');
-    setEditProductDescriptionEs(product.description_es || '');
-    setEditProductDescriptionAr(product.description_ar || '');
-    setEditProductImageUrl(product.image_url || '');
+    setEditProductFormData({
+      name: product.name || '',
+      name_en: product.name_en || '',
+      name_es: product.name_es || '',
+      name_ar: product.name_ar || '',
+      price: product.price !== undefined ? product.price : '',
+      description: product.description || '',
+      description_en: product.description_en || '',
+      description_es: product.description_es || '',
+      description_ar: product.description_ar || '',
+      image_url: product.image_url || '',
+    });
     setIsEditProductModalOpen(true);
   };
 
@@ -425,16 +439,16 @@ export default function CafeDetail() {
         method: 'PUT',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
-          name: editProductName,
-          name_en: editProductNameEn || null,
-          name_es: editProductNameEs || null,
-          name_ar: editProductNameAr || null,
-          description: editProductDescription,
-          description_en: editProductDescriptionEn || null,
-          description_es: editProductDescriptionEs || null,
-          description_ar: editProductDescriptionAr || null,
-          price: parseFloat(editProductPrice),
-          image_url: editProductImageUrl
+          name: editProductFormData.name,
+          name_en: editProductFormData.name_en || null,
+          name_es: editProductFormData.name_es || null,
+          name_ar: editProductFormData.name_ar || null,
+          description: editProductFormData.description || null,
+          description_en: editProductFormData.description_en || null,
+          description_es: editProductFormData.description_es || null,
+          description_ar: editProductFormData.description_ar || null,
+          price: parseFloat(editProductFormData.price),
+          image_url: editProductFormData.image_url || null
         }),
       });
 
@@ -648,69 +662,78 @@ export default function CafeDetail() {
               </div>
               
               <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <div className="w-full md:w-1/3 p-6 bg-slate-850 border-r border-slate-700 overflow-y-auto">
+                <div className="w-full md:w-1/3 p-6 bg-slate-850 border-r border-slate-700 overflow-y-auto max-h-[80vh]">
                   <h3 className="text-lg font-bold text-slate-300 mb-4">Hızlı Ürün Ekle</h3>
-                  <form onSubmit={handleSaveProduct}>
-                    <div className="mb-4">
-                      <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı</label>
-                      <input type="text" required value={productName} onChange={(e) => setProductName(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Fırın Sütlaç" />
-                    </div>
-                    {cafeDetails && cafeDetails.has_english && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İngilizce)</label>
-                        <input type="text" value={productNameEn} onChange={(e) => setProductNameEn(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Oven Baked Rice Pudding" />
-                      </div>
-                    )}
-                    {cafeDetails && cafeDetails.has_spanish && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İspanyolca)</label>
-                        <input type="text" value={productNameEs} onChange={(e) => setProductNameEs(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: Arroz con leche al horno" />
-                      </div>
-                    )}
-                    {cafeDetails && cafeDetails.has_arabic && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (Arapça)</label>
-                        <input type="text" value={productNameAr} onChange={(e) => setProductNameAr(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="Örn: أرز بالحليب في الفرن" dir="rtl" />
-                      </div>
-                    )}
-                    <div className="mb-4">
+                  <form onSubmit={handleSaveProduct} className="space-y-4">
+                    
+                    {/* Dinamik Ürün Adı Inputları */}
+                    {activeLanguages.map((langConfig) => {
+                      const fieldKey = `name${langConfig.key}`;
+                      const labelText = langConfig.isDefault ? "Ürün Adı" : `Ürün Adı (${langConfig.name})`;
+                      return (
+                        <div key={fieldKey}>
+                          <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
+                          <input 
+                            type="text" 
+                            required={langConfig.isDefault}
+                            value={productFormData[fieldKey] || ''} 
+                            onChange={(e) => handleProductFormChange(fieldKey, e.target.value)} 
+                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:outline-none focus:border-emerald-500" 
+                            placeholder={langConfig.placeholder || "Örn: Fırın Sütlaç"} 
+                            dir={langConfig.dir || 'ltr'}
+                          />
+                        </div>
+                      );
+                    })}
+
+                    {/* Fiyat Inputu (Sabit) */}
+                    <div>
                       <label className="block text-sm text-slate-400 mb-1 font-medium">Fiyat (TL)</label>
-                      <input type="number" step="0.01" required value={productPrice} onChange={(e) => setProductPrice(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white" placeholder="120.50" />
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        required 
+                        value={productFormData.price} 
+                        onChange={(e) => handleProductFormChange('price', e.target.value)} 
+                        className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:outline-none focus:border-emerald-500" 
+                        placeholder="120.50" 
+                      />
                     </div>
-                    <div className="mb-4">
-                      <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İsteğe Bağlı)</label>
-                      <textarea value={productDescription} onChange={(e) => setProductDescription(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="İçindekiler vb."></textarea>
-                    </div>
-                    {cafeDetails && cafeDetails.has_english && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İngilizce - İsteğe Bağlı)</label>
-                        <textarea value={productDescriptionEn} onChange={(e) => setProductDescriptionEn(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="Ingredients etc."></textarea>
-                      </div>
-                    )}
-                    {cafeDetails && cafeDetails.has_spanish && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İspanyolca - İsteğe Bağlı)</label>
-                        <textarea value={productDescriptionEs} onChange={(e) => setProductDescriptionEs(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="Ingredientes etc."></textarea>
-                      </div>
-                    )}
-                    {cafeDetails && cafeDetails.has_arabic && (
-                      <div className="mb-4">
-                        <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (Arapça - İsteğe Bağlı)</label>
-                        <textarea value={productDescriptionAr} onChange={(e) => setProductDescriptionAr(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm" rows="2" placeholder="المكونات وما إلى ذلك" dir="rtl"></textarea>
-                      </div>
-                    )}
-                    <div className="mb-6">
-                      <label className="block text-sm text-slate-400 mb-1">Görsel (İsteğe Bağlı)</label>
+
+                    {/* Dinamik Açıklama Textarea'ları */}
+                    {activeLanguages.map((langConfig) => {
+                      const fieldKey = `description${langConfig.key}`;
+                      const labelText = langConfig.isDefault 
+                        ? "Açıklama (İsteğe Bağlı)" 
+                        : `Açıklama (${langConfig.name} - İsteğe Bağlı)`;
+                      return (
+                        <div key={fieldKey}>
+                          <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
+                          <textarea 
+                            value={productFormData[fieldKey] || ''} 
+                            onChange={(e) => handleProductFormChange(fieldKey, e.target.value)} 
+                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm focus:outline-none focus:border-emerald-500" 
+                            rows="2" 
+                            placeholder={langConfig.descPlaceholder || "İçindekiler vb."}
+                            dir={langConfig.dir || 'ltr'}
+                          ></textarea>
+                        </div>
+                      );
+                    })}
+
+                    {/* Görsel Yükleme Area */}
+                    <div className="pt-2">
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">Görsel (İsteğe Bağlı)</label>
                       <div className="flex flex-col gap-2">
-                        {productImageUrl ? (
+                        {productFormData.image_url ? (
                           <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-2">
-                            <ImageWithSkeleton src={productImageUrl} alt="Önizleme" className="w-12 h-12 object-cover rounded" />
+                            <ImageWithSkeleton src={productFormData.image_url} alt="Önizleme" className="w-12 h-12 object-cover rounded" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-slate-400 truncate">{productImageUrl}</p>
+                              <p className="text-xs text-slate-400 truncate">{productFormData.image_url}</p>
                             </div>
                             <button 
                               type="button" 
-                              onClick={() => setProductImageUrl('')} 
+                              onClick={() => handleProductFormChange('image_url', '')} 
                               className="text-red-400 hover:text-red-300 text-xs font-bold px-2 py-1"
                             >
                               Sil
@@ -736,7 +759,8 @@ export default function CafeDetail() {
                         )}
                       </div>
                     </div>
-                    <button type="submit" disabled={isAddUploading} className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+
+                    <button type="submit" disabled={isAddUploading} className="w-full bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2">
                       Listeye Ekle
                     </button>
                   </form>
@@ -1074,117 +1098,71 @@ export default function CafeDetail() {
                 <button onClick={() => setIsEditProductModalOpen(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
               </div>
 
-              <form onSubmit={handleUpdateProduct}>
-                <div className="mb-4">
-                  <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={editProductName} 
-                    onChange={(e) => setEditProductName(e.target.value)} 
-                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
-                  />
-                </div>
-                {cafeDetails && cafeDetails.has_english && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İngilizce)</label>
-                    <input 
-                      type="text" 
-                      value={editProductNameEn} 
-                      onChange={(e) => setEditProductNameEn(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
-                    />
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_spanish && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (İspanyolca)</label>
-                    <input 
-                      type="text" 
-                      value={editProductNameEs} 
-                      onChange={(e) => setEditProductNameEs(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
-                    />
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_arabic && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Ürün Adı (Arapça)</label>
-                    <input 
-                      type="text" 
-                      value={editProductNameAr} 
-                      onChange={(e) => setEditProductNameAr(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
-                      dir="rtl"
-                    />
-                  </div>
-                )}
-                <div className="mb-4">
+              <form onSubmit={handleUpdateProduct} className="space-y-4">
+                
+                {/* Dinamik Ürün Adı Inputları */}
+                {activeLanguages.map((langConfig) => {
+                  const fieldKey = `name${langConfig.key}`;
+                  const labelText = langConfig.isDefault ? "Ürün Adı" : `Ürün Adı (${langConfig.name})`;
+                  return (
+                    <div key={fieldKey}>
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
+                      <input 
+                        type="text" 
+                        required={langConfig.isDefault}
+                        value={editProductFormData[fieldKey] || ''} 
+                        onChange={(e) => handleEditProductFormChange(fieldKey, e.target.value)} 
+                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
+                        dir={langConfig.dir || 'ltr'}
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Fiyat Inputu (Sabit) */}
+                <div>
                   <label className="block text-sm text-slate-400 mb-1 font-medium">Fiyat (TL)</label>
                   <input 
                     type="number" 
                     step="0.01" 
                     required 
-                    value={editProductPrice} 
-                    onChange={(e) => setEditProductPrice(e.target.value)} 
+                    value={editProductFormData.price} 
+                    onChange={(e) => handleEditProductFormChange('price', e.target.value)} 
                     className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-blue-500" 
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama</label>
-                  <textarea 
-                    value={editProductDescription} 
-                    onChange={(e) => setEditProductDescription(e.target.value)} 
-                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
-                    rows="3"
-                  ></textarea>
-                </div>
-                {cafeDetails && cafeDetails.has_english && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İngilizce)</label>
-                    <textarea 
-                      value={editProductDescriptionEn} 
-                      onChange={(e) => setEditProductDescriptionEn(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
-                      rows="3"
-                    ></textarea>
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_spanish && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (İspanyolca)</label>
-                    <textarea 
-                      value={editProductDescriptionEs} 
-                      onChange={(e) => setEditProductDescriptionEs(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
-                      rows="3"
-                    ></textarea>
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_arabic && (
-                  <div className="mb-4">
-                    <label className="block text-sm text-slate-400 mb-1 font-medium">Açıklama (Arapça)</label>
-                    <textarea 
-                      value={editProductDescriptionAr} 
-                      onChange={(e) => setEditProductDescriptionAr(e.target.value)} 
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
-                      rows="3"
-                      dir="rtl"
-                    ></textarea>
-                  </div>
-                )}
-                <div className="mb-6">
+
+                {/* Dinamik Açıklama Textarea'ları */}
+                {activeLanguages.map((langConfig) => {
+                  const fieldKey = `description${langConfig.key}`;
+                  const labelText = langConfig.isDefault ? "Açıklama" : `Açıklama (${langConfig.name})`;
+                  return (
+                    <div key={fieldKey}>
+                      <label className="block text-sm text-slate-400 mb-1 font-medium">{labelText}</label>
+                      <textarea 
+                        value={editProductFormData[fieldKey] || ''} 
+                        onChange={(e) => handleEditProductFormChange(fieldKey, e.target.value)} 
+                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-blue-500" 
+                        rows="3"
+                        dir={langConfig.dir || 'ltr'}
+                      ></textarea>
+                    </div>
+                  );
+                })}
+
+                {/* Görsel Yükleme Area */}
+                <div className="pt-2">
                   <label className="block text-sm text-slate-400 mb-1 font-medium">Görsel</label>
                   <div className="flex flex-col gap-2">
-                    {editProductImageUrl ? (
+                    {editProductFormData.image_url ? (
                       <div className="flex items-center gap-3 bg-slate-900 border border-slate-600 rounded p-3">
-                        <ImageWithSkeleton src={editProductImageUrl} alt="Önizleme" className="w-14 h-14 object-cover rounded" />
+                        <ImageWithSkeleton src={editProductFormData.image_url} alt="Önizleme" className="w-14 h-14 object-cover rounded" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-slate-400 truncate">{editProductImageUrl}</p>
+                          <p className="text-xs text-slate-400 truncate">{editProductFormData.image_url}</p>
                         </div>
                         <button 
                           type="button" 
-                          onClick={() => setEditProductImageUrl('')} 
+                          onClick={() => handleEditProductFormChange('image_url', '')} 
                           className="text-red-400 hover:text-red-300 text-xs font-bold px-2 py-1"
                         >
                           Sil
@@ -1202,23 +1180,19 @@ export default function CafeDetail() {
                         />
                         <label 
                           htmlFor="edit-product-image-file" 
-                          className={`flex items-center justify-center gap-2 border border-dashed border-slate-600 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:bg-slate-800 transition-all ${isEditUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`flex items-center justify-center gap-2 border border-dashed border-slate-600 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:bg-slate-900 transition-all ${isEditUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <span>{isEditUploading ? '⏳ Yükleniyor...' : '📸 Görsel Seç'}</span>
+                          <span>{isEditUploading ? '⏳ Yükleniyor...' : '📸 Görsel Değiştir'}</span>
                         </label>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsEditProductModalOpen(false)} className="px-5 py-2 rounded-lg text-slate-300 hover:bg-slate-700">İptal</button>
-                  <button 
-                    type="submit" 
-                    disabled={isSavingProduct || isEditUploading}
-                    className={`bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50 transition-all ${(isSavingProduct || isEditUploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isSavingProduct ? 'Güncelleniyor...' : 'Güncelle'}
+                <div className="flex justify-end gap-3 pt-4">
+                  <button type="button" onClick={() => setIsEditProductModalOpen(false)} className="px-5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 font-medium">İptal</button>
+                  <button type="submit" disabled={isSavingProduct || isEditUploading} className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-lg font-bold text-white shadow-lg shadow-blue-900/50 transition-colors disabled:opacity-50">
+                    {isSavingProduct ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
                   </button>
                 </div>
               </form>
