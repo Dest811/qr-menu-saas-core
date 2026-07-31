@@ -359,7 +359,7 @@ export default function Menu() {
     >
       
       {/* HERO SECTION */}
-      <header className="relative pt-24 pb-20 px-6 text-center overflow-hidden shadow-lg">
+      <header className="relative z-[100] pt-24 pb-20 px-6 text-center shadow-lg">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url('${coverImage}')` }}
