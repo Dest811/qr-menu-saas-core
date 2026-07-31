@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import ImageWithSkeleton from '../components/ImageWithSkeleton';
 
@@ -639,23 +640,23 @@ export default function Menu() {
         </footer>
       )}
 
-      {/* ÜRÜN DETAY MODALI */}
-      {selectedProductDetail && (
+      {/* ÜRÜN DETAY MODALI (React Portal ile document.body seviyesinde z-[99999] render) */}
+      {selectedProductDetail && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 transition-opacity duration-300 ease-out"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm transition-opacity duration-300 ease-out"
           style={{ opacity: selectedProductDetail ? 1 : 0 }}
           onClick={() => setSelectedProductDetail(null)}
         >
           <div 
-            className="animate-scale-in bg-slate-950 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden border border-slate-800 transition-all duration-300 ease-out"
+            className="animate-scale-in bg-slate-950 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden border border-slate-800 transition-all duration-300 ease-out max-h-[90vh] flex flex-col"
             style={{ 
-              backgroundColor: `${primaryColor}CC`,
-              backdropFilter: 'blur(15px)' 
+              backgroundColor: `${primaryColor}E6`,
+              backdropFilter: 'blur(20px)' 
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {selectedProductDetail.image_url ? (
-              <div className="w-full h-72 relative overflow-hidden">
+              <div className="w-full h-72 relative overflow-hidden shrink-0">
                 <ImageWithSkeleton
                   src={selectedProductDetail.image_url}
                   alt={selectedProductDetail.name}
@@ -663,24 +664,24 @@ export default function Menu() {
                 />
                 <button 
                   onClick={() => setSelectedProductDetail(null)}
-                  className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center text-xl font-bold backdrop-blur-sm transition-all hover:bg-black/70 z-20"
+                  className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center text-xl font-bold backdrop-blur-sm transition-all hover:bg-black/70 z-20 cursor-pointer"
                 >
                   &times;
                 </button>
               </div>
             ) : (
-              <div className="w-full h-40 relative flex items-center justify-center text-5xl bg-slate-800" style={{ color: `${primaryColor}40` }}>
+              <div className="w-full h-40 relative flex items-center justify-center text-5xl bg-slate-800 shrink-0" style={{ color: `${primaryColor}40` }}>
                 🍽️
                  <button 
                   onClick={() => setSelectedProductDetail(null)}
-                  className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 text-3xl font-bold px-3 py-1 rounded"
+                  className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 text-3xl font-bold px-3 py-1 rounded cursor-pointer"
                 >
                   &times;
                 </button>
               </div>
             )}
 
-            <div className="p-8 text-white">
+            <div className="p-8 text-white overflow-y-auto">
               <div className="flex justify-between items-start mb-6 gap-3">
                 <h1 
                   className="text-2xl font-bold leading-tight tracking-tight break-words" 
@@ -703,7 +704,8 @@ export default function Menu() {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
