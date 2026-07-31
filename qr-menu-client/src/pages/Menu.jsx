@@ -39,6 +39,23 @@ export default function Menu() {
     };
   }, []);
 
+  // DROPDOWN SCROLL TO CLOSE: Sayfa kaydırıldığında açık olan diller menüsünü kapat
+  useEffect(() => {
+    if (!isLangOpen) return;
+
+    const handleScrollClose = () => {
+      setIsLangOpen(false);
+    };
+
+    window.addEventListener('scroll', handleScrollClose, { passive: true });
+    window.addEventListener('touchmove', handleScrollClose, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollClose);
+      window.removeEventListener('touchmove', handleScrollClose);
+    };
+  }, [isLangOpen]);
+
   useEffect(() => {
     fetchCafeData();
   }, [slug]);
@@ -385,11 +402,11 @@ export default function Menu() {
         
         {/* Dil Değiştirme Dropdown Menüsü (Sağ Üst Köşede Açılır Menü) */}
         {cafe && availableLanguages.length > 1 && (
-          <div className="absolute top-4 right-4 z-30" ref={langDropdownRef}>
+          <div className="absolute top-4 right-4 z-[99]" ref={langDropdownRef}>
             <button 
               type="button"
               onClick={() => setIsLangOpen(prev => !prev)}
-              className="flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10 cursor-pointer select-none active:scale-95"
+              className="flex items-center gap-1.5 text-xs text-white bg-black/60 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/80 transition-all font-semibold shadow-lg border border-white/15 cursor-pointer select-none active:scale-95"
               aria-expanded={isLangOpen}
               aria-haspopup="true"
             >
@@ -406,9 +423,9 @@ export default function Menu() {
               </svg>
             </button>
 
-            {/* Açılır Menü (Dropdown List) */}
+            {/* Açılır Menü (Akıllı Yükseklik & Kaydırılabilir Dropdown List) */}
             <div 
-              className={`absolute right-0 mt-2 w-44 bg-black/85 backdrop-blur-xl border border-white/15 shadow-2xl rounded-2xl py-1.5 overflow-hidden transition-all duration-200 ease-out origin-top-right ${
+              className={`absolute right-0 mt-2 w-48 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto bg-slate-950/95 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl py-1.5 transition-all duration-200 ease-out origin-top-right z-[99] ${
                 isLangOpen 
                   ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
                   : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
@@ -424,7 +441,7 @@ export default function Menu() {
                       setLang(l.code);
                       setIsLangOpen(false);
                     }}
-                    className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between transition-colors cursor-pointer select-none ${
+                    className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between transition-colors cursor-pointer select-none ${
                       isSelected 
                         ? 'bg-white/20 text-white font-bold' 
                         : 'text-white/80 hover:bg-white/10 hover:text-white font-medium'
