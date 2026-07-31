@@ -62,6 +62,13 @@ async function run() {
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS has_persian BOOLEAN DEFAULT FALSE;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text TEXT;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_en TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_es TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_ar TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_fr TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_pt TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_ru TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_de TEXT;
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_fa TEXT;
       `);
       console.log("✓ Cafe columns verified / added.");
     } catch (columnErr) {

@@ -24,11 +24,21 @@ export default function CafeDetail() {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [categoryName, setCategoryName] = useState('');
-  const [categoryNameEn, setCategoryNameEn] = useState('');
-  const [categoryNameEs, setCategoryNameEs] = useState('');
-  const [categoryNameAr, setCategoryNameAr] = useState('');
-  const [orderIndex, setOrderIndex] = useState(0);
+  const [editingCategory, setEditingCategory] = useState(null);
+  
+  const initialCategoryFormData = {
+    name: '',
+    name_en: '',
+    name_es: '',
+    name_ar: '',
+    name_fr: '',
+    name_pt: '',
+    name_ru: '',
+    name_de: '',
+    name_fa: '',
+    order_index: 0
+  };
+  const [categoryFormData, setCategoryFormData] = useState(initialCategoryFormData);
 
   // --- ÜRÜN STATE'LERİ (Dinamik ve Ölçeklenebilir) ---
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -128,7 +138,14 @@ export default function CafeDetail() {
     isPersianActive: false,
     has_persian: false,
     campaign_text: '',
-    campaign_text_en: ''
+    campaign_text_en: '',
+    campaign_text_es: '',
+    campaign_text_ar: '',
+    campaign_text_fr: '',
+    campaign_text_pt: '',
+    campaign_text_ru: '',
+    campaign_text_de: '',
+    campaign_text_fa: ''
   });
   const [showExtraInfo, setShowExtraInfo] = useState(false);
   const [showCampaign, setShowCampaign] = useState(false);
@@ -189,12 +206,19 @@ export default function CafeDetail() {
           isPersianActive: data.isPersianActive || data.has_persian || false,
           has_persian: data.has_persian || data.isPersianActive || false,
           campaign_text: data.campaign_text || '',
-          campaign_text_en: data.campaign_text_en || ''
+          campaign_text_en: data.campaign_text_en || '',
+          campaign_text_es: data.campaign_text_es || '',
+          campaign_text_ar: data.campaign_text_ar || '',
+          campaign_text_fr: data.campaign_text_fr || '',
+          campaign_text_pt: data.campaign_text_pt || '',
+          campaign_text_ru: data.campaign_text_ru || '',
+          campaign_text_de: data.campaign_text_de || '',
+          campaign_text_fa: data.campaign_text_fa || ''
         });
         if (data.working_hours || data.maps_url || data.instagram_url || data.phone_number) {
           setShowExtraInfo(true);
         }
-        if (data.campaign_text || data.campaign_text_en) {
+        if (data.campaign_text || data.campaign_text_en || data.campaign_text_es || data.campaign_text_ar || data.campaign_text_fr || data.campaign_text_pt || data.campaign_text_ru || data.campaign_text_de || data.campaign_text_fa) {
           setShowCampaign(true);
         }
       }
@@ -232,7 +256,14 @@ export default function CafeDetail() {
         isPersianActive: branding.isPersianActive || branding.has_persian || false,
         has_persian: branding.has_persian || branding.isPersianActive || false,
         campaign_text: branding.campaign_text || '',
-        campaign_text_en: branding.campaign_text_en || ''
+        campaign_text_en: branding.campaign_text_en || '',
+        campaign_text_es: branding.campaign_text_es || '',
+        campaign_text_ar: branding.campaign_text_ar || '',
+        campaign_text_fr: branding.campaign_text_fr || '',
+        campaign_text_pt: branding.campaign_text_pt || '',
+        campaign_text_ru: branding.campaign_text_ru || '',
+        campaign_text_de: branding.campaign_text_de || '',
+        campaign_text_fa: branding.campaign_text_fa || ''
       };
 
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
@@ -282,31 +313,58 @@ export default function CafeDetail() {
     }
   };
 
+  const openCreateCategory = () => {
+    setEditingCategory(null);
+    setCategoryFormData(initialCategoryFormData);
+    setIsCategoryModalOpen(true);
+  };
+
+  const openEditCategory = (category) => {
+    setEditingCategory(category);
+    setCategoryFormData({
+      name: category.name || '',
+      name_en: category.name_en || '',
+      name_es: category.name_es || '',
+      name_ar: category.name_ar || '',
+      name_fr: category.name_fr || '',
+      name_pt: category.name_pt || '',
+      name_ru: category.name_ru || '',
+      name_de: category.name_de || '',
+      name_fa: category.name_fa || '',
+      order_index: category.order_index || 0
+    });
+    setIsCategoryModalOpen(true);
+  };
+
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        method: 'POST',
+      const isEdit = !!editingCategory;
+      const url = isEdit 
+        ? `${API_BASE_URL}/api/categories/${editingCategory.id}`
+        : `${API_BASE_URL}/api/categories`;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const payload = {
+        ...categoryFormData,
+        order_index: parseInt(categoryFormData.order_index) || 0
+      };
+      if (!isEdit) {
+        payload.cafe_id = parseInt(id);
+      }
+
+      const response = await fetch(url, {
+        method: method,
         headers: getHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({
-          cafe_id: parseInt(id),
-          name: categoryName,
-          name_en: categoryNameEn || null,
-          name_es: categoryNameEs || null,
-          name_ar: categoryNameAr || null,
-          order_index: parseInt(orderIndex)
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (handleAuthError(response)) return;
 
       if (response.ok) {
         fetchCategories(); 
-        setCategoryName('');
-        setCategoryNameEn('');
-        setCategoryNameEs('');
-        setCategoryNameAr('');
-        setOrderIndex(0);
+        setCategoryFormData(initialCategoryFormData);
+        setEditingCategory(null);
         setIsCategoryModalOpen(false);
       }
     } catch (error) {
@@ -602,7 +660,7 @@ export default function CafeDetail() {
                 🎨 Görünümü Özelleştir
               </button>
               <button 
-                onClick={() => setIsCategoryModalOpen(true)}
+                onClick={openCreateCategory}
                 className="w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/50 cursor-pointer text-sm sm:text-base"
               >
                 + Yeni Kategori
@@ -646,8 +704,17 @@ export default function CafeDetail() {
                     Ürünleri Yönet →
                   </button>
                   <button 
+                    onClick={() => openEditCategory(category)}
+                    className="text-slate-400 hover:text-blue-400 transition-colors p-1 cursor-pointer"
+                    title="Kategoriyi Düzenle"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button 
                     onClick={() => handleDeleteCategory(category.id)}
-                    className="text-slate-500 hover:text-red-500 transition-colors"
+                    className="text-slate-500 hover:text-red-500 transition-colors p-1 cursor-pointer"
                     title="Kategoriyi Sil"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -662,67 +729,41 @@ export default function CafeDetail() {
 
         {/* --- MODALLAR (AÇILIR PENCERELER) BÖLÜMÜ --- */}
 
-        {/* KATEGORİ EKLEME MODALI */}
+        {/* KATEGORİ EKLEME / DÜZENLEME MODALI */}
         {isCategoryModalOpen && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl">
-              <h2 className="text-2xl font-bold mb-6 text-white">Yeni Kategori Oluştur</h2>
+            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[85vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold mb-6 text-white">
+                {editingCategory ? 'Kategoriyi Düzenle' : 'Yeni Kategori Oluştur'}
+              </h2>
               <form onSubmit={handleSaveCategory}>
-                <div className="mb-4">
-                  <label className="block text-slate-400 mb-2 font-medium">Kategori Adı</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
-                    placeholder="Örn: Tatlılar, Ana Yemekler"
-                  />
-                </div>
-                {cafeDetails && cafeDetails.has_english && (
-                  <div className="mb-4">
-                    <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (İngilizce)</label>
-                    <input 
-                      type="text" 
-                      value={categoryNameEn}
-                      onChange={(e) => setCategoryNameEn(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
-                      placeholder="Örn: Desserts, Main Courses"
-                    />
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_spanish && (
-                  <div className="mb-4">
-                    <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (İspanyolca)</label>
-                    <input 
-                      type="text" 
-                      value={categoryNameEs}
-                      onChange={(e) => setCategoryNameEs(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
-                      placeholder="Örn: Postres, Platos Principales"
-                    />
-                  </div>
-                )}
-                {cafeDetails && cafeDetails.has_arabic && (
-                  <div className="mb-4">
-                    <label className="block text-slate-400 mb-2 font-medium">Kategori Adı (Arapça)</label>
-                    <input 
-                      type="text" 
-                      value={categoryNameAr}
-                      onChange={(e) => setCategoryNameAr(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
-                      placeholder="Örn: الحلويات، الأطباق الرئيسية"
-                      dir="rtl"
-                    />
-                  </div>
-                )}
+                {/* Dinamik Kategori Adı Inputları */}
+                {activeLanguages.map((langConfig) => {
+                  const fieldKey = `name${langConfig.key}`;
+                  const labelText = langConfig.isDefault ? "Kategori Adı" : `Kategori Adı (${langConfig.name})`;
+                  const isRtl = langConfig.dir === 'rtl';
+                  return (
+                    <div key={fieldKey} className="mb-4">
+                      <label className="block text-slate-400 mb-2 font-medium">{labelText}</label>
+                      <input 
+                        type="text" 
+                        required={langConfig.isDefault}
+                        value={categoryFormData[fieldKey] || ''}
+                        onChange={(e) => setCategoryFormData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                        className={`w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 ${isRtl ? 'text-right' : ''}`}
+                        placeholder={langConfig.placeholder ? `Örn: ${langConfig.placeholder}` : "Kategori Adı"}
+                        dir={langConfig.dir || 'auto'}
+                      />
+                    </div>
+                  );
+                })}
                 <div className="mb-6">
                   <label className="block text-slate-400 mb-2 font-medium">Sıralama (Order Index)</label>
                   <input 
                     type="number" 
                     required
-                    value={orderIndex}
-                    onChange={(e) => setOrderIndex(e.target.value)}
+                    value={categoryFormData.order_index}
+                    onChange={(e) => setCategoryFormData(prev => ({ ...prev, order_index: e.target.value }))}
                     className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -1143,7 +1184,14 @@ export default function CafeDetail() {
                           setBranding(prev => ({
                             ...prev,
                             campaign_text: '',
-                            campaign_text_en: ''
+                            campaign_text_en: '',
+                            campaign_text_es: '',
+                            campaign_text_ar: '',
+                            campaign_text_fr: '',
+                            campaign_text_pt: '',
+                            campaign_text_ru: '',
+                            campaign_text_de: '',
+                            campaign_text_fa: ''
                           }));
                         }
                       }}
@@ -1155,30 +1203,27 @@ export default function CafeDetail() {
                   </label>
                 </div>
 
-                {/* Koşullu Kampanya Girişleri */}
+                {/* Koşullu Kampanya Girişleri (Dinamik Diller) */}
                 {showCampaign && (
                   <div className="mt-4 p-4 rounded-xl bg-slate-900/40 border border-slate-700/50 space-y-4">
-                    <div>
-                      <label className="block text-slate-400 mb-1 text-xs font-medium">Kampanya Metni (TR)</label>
-                      <input 
-                        type="text" 
-                        value={branding.campaign_text || ''}
-                        onChange={(e) => setBranding({...branding, campaign_text: e.target.value})}
-                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
-                        placeholder="Örn: Kahve + Tatlı Menüsü Sadece 150₺!"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-400 mb-1 text-xs font-medium">Kampanya Metni (EN)</label>
-                      <input 
-                        type="text" 
-                        value={branding.campaign_text_en || ''}
-                        onChange={(e) => setBranding({...branding, campaign_text_en: e.target.value})}
-                        className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
-                        placeholder="Örn: Coffee + Dessert Menu Only 150!"
-                      />
-                    </div>
+                    {activeLanguages.map((langConfig) => {
+                      const fieldKey = `campaign_text${langConfig.key}`;
+                      const labelText = langConfig.isDefault ? "Kampanya Metni (TR)" : `Kampanya Metni (${langConfig.name})`;
+                      const isRtl = langConfig.dir === 'rtl';
+                      return (
+                        <div key={fieldKey}>
+                          <label className="block text-slate-400 mb-1 text-xs font-medium">{labelText}</label>
+                          <input 
+                            type="text" 
+                            value={branding[fieldKey] || ''}
+                            onChange={(e) => setBranding(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                            className={`w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-blue-500 ${isRtl ? 'text-right' : ''}`}
+                            placeholder={langConfig.isDefault ? "Örn: Kahve + Tatlı Menüsü Sadece 150₺!" : `Örn: ${langConfig.name} Kampanya Metni`}
+                            dir={langConfig.dir || 'auto'}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

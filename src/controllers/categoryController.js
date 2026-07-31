@@ -30,7 +30,26 @@ const createCategory = async (req, res) => {
   }
 };
 
-// 3. Kategoriyi sil (DELETE) - [KORUMALI]
+// 3. Kategoriyi güncelle (PUT) - [KORUMALI]
+const updateCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, name_en, name_es, name_ar, name_fr, name_pt, name_ru, name_de, name_fa, order_index } = req.body;
+    const updatedCategory = await pool.query(
+      'UPDATE categories SET name = $1, name_en = $2, name_es = $3, name_ar = $4, name_fr = $5, name_pt = $6, name_ru = $7, name_de = $8, name_fa = $9, order_index = $10 WHERE id = $11 RETURNING *',
+      [name, name_en || null, name_es || null, name_ar || null, name_fr || null, name_pt || null, name_ru || null, name_de || null, name_fa || null, order_index || 0, id]
+    );
+    if (updatedCategory.rows.length === 0) {
+      return res.status(404).json({ error: "Güncellenecek kategori bulunamadı." });
+    }
+    res.json(updatedCategory.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Kategori güncellenirken hata oluştu." });
+  }
+};
+
+// 4. Kategoriyi sil (DELETE) - [KORUMALI]
 const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -45,5 +64,6 @@ const deleteCategory = async (req, res) => {
 module.exports = {
   getCategoriesByCafeId,
   createCategory,
+  updateCategory,
   deleteCategory
 };
