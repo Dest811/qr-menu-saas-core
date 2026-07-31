@@ -39,23 +39,6 @@ export default function Menu() {
     };
   }, []);
 
-  // DROPDOWN SCROLL TO CLOSE: Sayfa kaydırıldığında açık olan diller menüsünü kapat
-  useEffect(() => {
-    if (!isLangOpen) return;
-
-    const handleScrollClose = () => {
-      setIsLangOpen(false);
-    };
-
-    window.addEventListener('scroll', handleScrollClose, { passive: true });
-    window.addEventListener('touchmove', handleScrollClose, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScrollClose);
-      window.removeEventListener('touchmove', handleScrollClose);
-    };
-  }, [isLangOpen]);
-
   useEffect(() => {
     fetchCafeData();
   }, [slug]);
@@ -402,7 +385,7 @@ export default function Menu() {
         
         {/* Dil Değiştirme Dropdown Menüsü (Sağ Üst Köşede Açılır Menü) */}
         {cafe && availableLanguages.length > 1 && (
-          <div className="absolute top-4 right-4 z-[999]" ref={langDropdownRef}>
+          <div className="absolute top-4 right-4 z-[9999]" ref={langDropdownRef}>
             <button 
               type="button"
               onClick={() => setIsLangOpen(prev => !prev)}
@@ -423,9 +406,9 @@ export default function Menu() {
               </svg>
             </button>
 
-            {/* Açılır Menü (Kompakt Yükseklik & Kaydırılabilir Dropdown List) */}
+            {/* Açılır Menü (Floating Overlay - Tam Boyut & Scrollbar'sız Dropdown List) */}
             <div 
-              className={`absolute right-0 mt-2 w-48 max-h-[220px] overflow-y-auto bg-slate-950/95 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl py-1.5 transition-all duration-200 ease-out origin-top-right z-[999] ${
+              className={`absolute right-0 mt-2 w-48 h-auto bg-slate-950/95 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl py-1.5 transition-all duration-200 ease-out origin-top-right z-[9999] ${
                 isLangOpen 
                   ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
                   : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
