@@ -25,6 +25,9 @@ export default function CafeDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
   
   const initialCategoryFormData = {
     name: '',
@@ -372,18 +375,33 @@ export default function CafeDetail() {
     }
   };
 
-  const handleDeleteCategory = async (categoryId) => {
+  const confirmDeleteCategory = (category) => {
+    setCategoryToDelete(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    setIsDeletingCategory(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryToDelete.id}`, {
         method: 'DELETE',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
       if (response.ok) {
-        setCategories(categories.filter(cat => cat.id !== categoryId));
+        setCategories(prev => prev.filter(cat => cat.id !== categoryToDelete.id));
+        setIsDeleteModalOpen(false);
+        setCategoryToDelete(null);
+      } else {
+        const errorData = await response.json();
+        alert("Kategori silinirken hata oluştu: " + (errorData.error || response.statusText));
       }
     } catch (error) {
       console.error("Error deleting category:", error);
+      alert("Sunucu hatası: Kategori silinemedi.");
+    } finally {
+      setIsDeletingCategory(false);
     }
   };
 
@@ -713,7 +731,7 @@ export default function CafeDetail() {
                     </svg>
                   </button>
                   <button 
-                    onClick={() => handleDeleteCategory(category.id)}
+                    onClick={() => confirmDeleteCategory(category)}
                     className="text-slate-500 hover:text-red-500 transition-colors p-1 cursor-pointer"
                     title="Kategoriyi Sil"
                   >
@@ -772,6 +790,53 @@ export default function CafeDetail() {
                   <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-lg font-bold text-white">Kaydet</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* KATEGORİ SİLME ONAY MODALI */}
+        {isDeleteModalOpen && categoryToDelete && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div className="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl">
+              <div className="flex items-center gap-3 text-red-500 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 text-xl font-bold">
+                  ⚠️
+                </div>
+                <h2 className="text-xl font-bold text-white">Kategoriyi Sil</h2>
+              </div>
+              
+              <p className="text-slate-300 mb-6 text-sm sm:text-base leading-relaxed">
+                <span className="font-bold text-white">"{categoryToDelete.name}"</span> kategorisini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button 
+                  type="button" 
+                  disabled={isDeletingCategory}
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setCategoryToDelete(null);
+                  }} 
+                  className="px-5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-700 bg-slate-800 border border-slate-600 transition-colors font-medium text-sm disabled:opacity-50 cursor-pointer"
+                >
+                  Vazgeç
+                </button>
+                <button 
+                  type="button" 
+                  disabled={isDeletingCategory}
+                  onClick={handleConfirmDeleteCategory} 
+                  className="bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-red-900/40 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isDeletingCategory ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Siliniyor...</span>
+                    </>
+                  ) : (
+                    'Evet, Sil'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
