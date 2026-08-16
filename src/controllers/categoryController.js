@@ -1,5 +1,8 @@
 const pool = require('../config/db');
 
+// Boş metin (whitespace / empty string) sanitizasyonu için yardımcı fonksiyon
+const cleanStr = (val) => (val && typeof val === 'string' && val.trim() !== '') ? val.trim() : null;
+
 // 1. Belirli bir kafenin tüm kategorilerini getir (GET) - (Açık rota)
 const getCategoriesByCafeId = async (req, res) => {
   try {
@@ -23,18 +26,32 @@ const createCategory = async (req, res) => {
   try {
     const { cafe_id, name, name_en, name_es, name_ar, name_fr, name_pt, name_ru, name_de, name_fa, order_index } = req.body;
     const parsedCafeId = parseInt(cafe_id, 10);
-    if (isNaN(parsedCafeId) || !name || typeof name !== 'string' || name.trim() === '') {
+    
+    const cleanName = cleanStr(name);
+    if (isNaN(parsedCafeId) || !cleanName) {
       return res.status(400).json({ error: "Geçersiz kafe kimliği veya boş kategori adı." });
     }
 
     const newCategory = await pool.query(
       'INSERT INTO categories (cafe_id, name, name_en, name_es, name_ar, name_fr, name_pt, name_ru, name_de, name_fa, order_index) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
-      [parsedCafeId, name.trim(), name_en || null, name_es || null, name_ar || null, name_fr || null, name_pt || null, name_ru || null, name_de || null, name_fa || null, parseInt(order_index, 10) || 0]
+      [
+        parsedCafeId, 
+        cleanName, 
+        cleanStr(name_en), 
+        cleanStr(name_es), 
+        cleanStr(name_ar), 
+        cleanStr(name_fr), 
+        cleanStr(name_pt), 
+        cleanStr(name_ru), 
+        cleanStr(name_de), 
+        cleanStr(name_fa), 
+        parseInt(order_index, 10) || 0
+      ]
     );
     res.json(newCategory.rows[0]);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Kategori eklenirken hata oluştu." });
+    console.error("Kategori ekleme hatası:", err.message);
+    res.status(500).json({ error: "Kategori eklenirken hata oluştu: " + err.message });
   }
 };
 
@@ -46,21 +63,35 @@ const updateCategory = async (req, res) => {
       return res.status(400).json({ error: "Geçersiz kategori kimliği." });
     }
     const { name, name_en, name_es, name_ar, name_fr, name_pt, name_ru, name_de, name_fa, order_index } = req.body;
-    if (!name || typeof name !== 'string' || name.trim() === '') {
+    
+    const cleanName = cleanStr(name);
+    if (!cleanName) {
       return res.status(400).json({ error: "Kategori adı boş bırakılamaz." });
     }
 
     const updatedCategory = await pool.query(
       'UPDATE categories SET name = $1, name_en = $2, name_es = $3, name_ar = $4, name_fr = $5, name_pt = $6, name_ru = $7, name_de = $8, name_fa = $9, order_index = $10 WHERE id = $11 RETURNING *',
-      [name.trim(), name_en || null, name_es || null, name_ar || null, name_fr || null, name_pt || null, name_ru || null, name_de || null, name_fa || null, parseInt(order_index, 10) || 0, categoryId]
+      [
+        cleanName, 
+        cleanStr(name_en), 
+        cleanStr(name_es), 
+        cleanStr(name_ar), 
+        cleanStr(name_fr), 
+        cleanStr(name_pt), 
+        cleanStr(name_ru), 
+        cleanStr(name_de), 
+        cleanStr(name_fa), 
+        parseInt(order_index, 10) || 0, 
+        categoryId
+      ]
     );
     if (updatedCategory.rows.length === 0) {
       return res.status(404).json({ error: "Güncellenecek kategori bulunamadı." });
     }
     res.json(updatedCategory.rows[0]);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Kategori güncellenirken hata oluştu." });
+    console.error("Kategori güncelleme hatası:", err.message);
+    res.status(500).json({ error: "Kategori güncellenirken hata oluştu: " + err.message });
   }
 };
 

@@ -2,11 +2,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Admin from './pages/Admin';
 import CafeDetail from './pages/CafeDetail';
 import Login from './pages/Login';
+import { getAuthUser } from './utils/auth';
 
 // Yetkilendirme kontrolü sağlayan wrapper bileşen
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('adminToken');
-  if (!token) {
+  const user = getAuthUser();
+  if (!user || !user.token) {
     return <Navigate to="/login" replace />;
   }
   return children;

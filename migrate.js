@@ -26,6 +26,8 @@ async function run() {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
+        username VARCHAR(255) UNIQUE,
+        password_hash VARCHAR(255),
         logo_url TEXT,
         hero_image TEXT,
         "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop',
@@ -43,6 +45,8 @@ async function run() {
     try {
       await client.query(`
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS "coverImage" TEXT DEFAULT 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS username VARCHAR(255);
+        ALTER TABLE cafes ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS working_hours TEXT;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS maps_url TEXT;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS instagram_url TEXT;
@@ -70,7 +74,25 @@ async function run() {
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_de TEXT;
         ALTER TABLE cafes ADD COLUMN IF NOT EXISTS campaign_text_fa TEXT;
       `);
-      console.log("✓ Cafe columns verified / added.");
+
+      // Fill username with slug for existing cafes where username is missing or empty
+      await client.query(`
+        UPDATE cafes SET username = slug WHERE username IS NULL OR username = '';
+      `);
+
+      // Ensure UNIQUE constraint on username if not already present
+      await client.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'cafes_username_key'
+          ) THEN
+            ALTER TABLE cafes ADD CONSTRAINT cafes_username_key UNIQUE (username);
+          END IF;
+        END $$;
+      `);
+
+      console.log("✓ Cafe columns, username & password_hash verified / added.");
     } catch (columnErr) {
       console.warn("Columns check failed:", columnErr.message);
     }

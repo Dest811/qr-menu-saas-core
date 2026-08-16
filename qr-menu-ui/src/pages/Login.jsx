@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://qr-menu-saas-core.onrender.com');
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -20,14 +20,25 @@ export default function Login() {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password: password.trim() }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.token) {
         localStorage.setItem('adminToken', data.token);
-        navigate('/admin');
+        
+        const role = data.role || (data.cafe ? 'cafe_owner' : 'superadmin');
+        const cafeId = data.cafe?.id || data.cafeId;
+
+        if (role) localStorage.setItem('userRole', role);
+        if (cafeId) localStorage.setItem('userCafeId', String(cafeId));
+
+        if (role === 'cafe_owner' && cafeId) {
+          navigate(`/admin/cafe/${cafeId}`, { replace: true });
+        } else {
+          navigate('/admin', { replace: true });
+        }
       } else {
         setError(data.error || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
       }
@@ -72,7 +83,7 @@ export default function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
-              placeholder="admin"
+              placeholder="Kullanıcı adınız veya admin"
             />
           </div>
 

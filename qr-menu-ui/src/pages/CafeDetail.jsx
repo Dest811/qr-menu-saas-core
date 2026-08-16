@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import ImageWithSkeleton from '../components/ImageWithSkeleton';
+import { getAuthUser, logout } from '../utils/auth';
 
-const API_BASE_URL = 'https://qr-menu-saas-core.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://qr-menu-saas-core.onrender.com');
 
 // Desteklenen Diller Konfigürasyonu (Gelecekte yeni bir dil eklendiğinde sadece buraya 1 nesne eklenir)
 const SUPPORTED_LANGUAGES = [
@@ -19,6 +20,26 @@ const SUPPORTED_LANGUAGES = [
 
 export default function CafeDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const authUser = getAuthUser();
+  const isCafeOwner = authUser && authUser.role === 'cafe_owner';
+
+  // --- BİLDİRİM / TOAST STATE'İ (Z-INDEX 9999) ---
+  const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' }
+
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
+
+  // Kafe Sahibi ise ve başkasının kafe ID'sine girmeye çalışıyorsa kendi kafesine yönlendir
+  useEffect(() => {
+    if (isCafeOwner && authUser.cafeId && String(id) !== String(authUser.cafeId)) {
+      navigate(`/admin/cafe/${authUser.cafeId}`, { replace: true });
+    }
+  }, [id, isCafeOwner, authUser, navigate]);
 
   // --- KATEGORİ STATE'LERİ ---
   const [categories, setCategories] = useState([]);
@@ -168,8 +189,8 @@ export default function CafeDetail() {
 
   const handleAuthError = (response) => {
     if (response.status === 401 || response.status === 403) {
-      localStorage.removeItem('adminToken');
-      window.location.reload();
+      logout();
+      navigate('/login', { replace: true });
       return true;
     }
     return false;
@@ -280,15 +301,16 @@ export default function CafeDetail() {
       if (response.ok) {
         const updatedCafe = await response.json();
         setCafeDetails(updatedCafe);
-        alert("Görünüm ayarları başarıyla güncellendi!");
+        setBranding(prev => ({ ...prev, ...updatedCafe }));
+        showToast("Görünüm ayarları başarıyla güncellendi!", "success");
         setIsSettingsOpen(false);
       } else {
         const errorData = await response.json();
-        alert("Kaydetme Başarısız! Hata: " + JSON.stringify(errorData));
+        showToast(errorData.error || "Görünüm ayarları güncellenemedi.", "error");
         console.error("Backend Hatası:", errorData);
       }
     } catch (error) {
-      alert("Sunucuya ulaşılamadı. Backend çalışıyor mu?");
+      showToast("Sunucuya ulaşılamadı. Bağlantınızı kontrol edin.", "error");
       console.error("Bağlantı Hatası:", error);
     }
   };
@@ -365,13 +387,24 @@ export default function CafeDetail() {
       if (handleAuthError(response)) return;
 
       if (response.ok) {
-        fetchCategories(); 
+        const savedCategory = await response.json();
+        if (isEdit) {
+          setCategories(prev => prev.map(c => c.id === savedCategory.id ? savedCategory : c));
+          showToast("Kategori başarıyla güncellendi!", "success");
+        } else {
+          setCategories(prev => [...prev, savedCategory]);
+          showToast("Yeni kategori başarıyla eklendi!", "success");
+        }
         setCategoryFormData(initialCategoryFormData);
         setEditingCategory(null);
         setIsCategoryModalOpen(false);
+      } else {
+        const errorData = await response.json();
+        showToast(errorData.error || "Kategori kaydedilemedi.", "error");
       }
     } catch (error) {
       console.error("Error saving category:", error);
+      showToast("Kategori kaydedilirken bağlantı hatası oluştu.", "error");
     }
   };
 
@@ -388,9 +421,12 @@ export default function CafeDetail() {
         method: 'DELETE',
         headers: getHeaders()
       });
+
       if (handleAuthError(response)) return;
+
       if (response.ok) {
-        setCategories(prev => prev.filter(cat => cat.id !== categoryToDelete.id));
+        setCategories(prev => prev.filter(c => c.id !== categoryToDelete.id));
+        showToast("Kategori başarıyla silindi!", "success");
         setIsDeleteModalOpen(false);
         setCategoryToDelete(null);
       } else {
@@ -640,14 +676,32 @@ export default function CafeDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6 md:p-8 font-sans">
+    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6 md:p-8 font-sans relative">
+      {/* Toast Bildirim Katmanı (Z-INDEX: 9999) */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-md flex items-center gap-3 transition-all animate-bounce ${
+          toast.type === 'error' 
+            ? 'bg-red-950/90 border-red-500 text-red-200' 
+            : 'bg-emerald-950/90 border-emerald-500 text-emerald-200'
+        }`}>
+          <span className="text-xl">{toast.type === 'error' ? '⚠️' : '✅'}</span>
+          <span className="font-semibold text-sm">{toast.message}</span>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         
         {/* Başlık ve Üst Menü */}
         <div className="mb-8">
-          <Link to="/admin" className="text-sm text-blue-400 hover:underline">
-            ← SaaS Kontrol Merkezine Dön
-          </Link>
+          {!isCafeOwner ? (
+            <Link to="/admin" className="text-sm text-blue-400 hover:underline inline-flex items-center gap-1">
+              ← SaaS Kontrol Merkezine Dön
+            </Link>
+          ) : (
+            <div className="text-xs text-amber-400 font-semibold bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg inline-block mb-1">
+              🔒 Kafe Yönetim Paneli
+            </div>
+          )}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 border-b border-slate-700 pb-6">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400 break-words">
               Menü Yönetimi: {cafeDetails ? cafeDetails.name : `Yükleniyor (ID: ${id})`}
@@ -682,6 +736,17 @@ export default function CafeDetail() {
                 className="w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 px-4 sm:px-6 py-2 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/50 cursor-pointer text-sm sm:text-base"
               >
                 + Yeni Kategori
+              </button>
+              {/* Çıkış Yap Butonu */}
+              <button 
+                onClick={() => {
+                  logout();
+                  navigate('/login', { replace: true });
+                }}
+                className="w-full sm:w-auto text-center bg-slate-800 hover:bg-slate-750 border border-slate-700 px-4 sm:px-5 py-2 rounded-lg font-semibold text-slate-300 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
+                title="Oturumu Kapat"
+              >
+                🚪 Çıkış Yap
               </button>
             </div>
           </div>
@@ -745,11 +810,9 @@ export default function CafeDetail() {
           </div>
         )}
 
-        {/* --- MODALLAR (AÇILIR PENCERELER) BÖLÜMÜ --- */}
-
-        {/* KATEGORİ EKLEME / DÜZENLEME MODALI */}
+        {/* KATEGORİ EKLEME / DÜZENLEME MODALI (Z-INDEX 1000) */}
         {isCategoryModalOpen && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[1000] backdrop-blur-sm">
             <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[85vh] overflow-y-auto">
               <h2 className="text-2xl font-bold mb-6 text-white">
                 {editingCategory ? 'Kategoriyi Düzenle' : 'Yeni Kategori Oluştur'}
@@ -794,9 +857,9 @@ export default function CafeDetail() {
           </div>
         )}
 
-        {/* KATEGORİ SİLME ONAY MODALI */}
+        {/* KATEGORİ SİLME ONAY MODALI (Z-INDEX 2000) */}
         {isDeleteModalOpen && categoryToDelete && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[2000] backdrop-blur-sm">
             <div className="bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl">
               <div className="flex items-center gap-3 text-red-500 mb-4">
                 <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 text-xl font-bold">
@@ -841,9 +904,9 @@ export default function CafeDetail() {
           </div>
         )}
 
-        {/* ÜRÜN YÖNETİM MODALI */}
+        {/* ÜRÜN YÖNETİM MODALI (Z-INDEX 1000) */}
         {isProductModalOpen && selectedCategory && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[1000] backdrop-blur-sm">
             <div className="bg-slate-800 rounded-2xl border border-slate-600 w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
               
               <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
@@ -1022,9 +1085,9 @@ export default function CafeDetail() {
           </div>
         )}
 
-        {/* TASARIM AYARLARI MODALI (YENİ) */}
+        {/* TASARIM AYARLARI MODALI (Z-INDEX 1000) */}
         {isSettingsOpen && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[1000] backdrop-blur-sm">
             <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">🎨 Renk & Görsel Ayarları</h2>
@@ -1352,9 +1415,9 @@ export default function CafeDetail() {
           </div>
         )}
 
-        {/* ÜRÜN DÜZENLEME MODALI */}
+        {/* ÜRÜN DÜZENLEME MODALI (Z-INDEX 2000) */}
         {isEditProductModalOpen && selectedProductToEdit && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[2000] backdrop-blur-sm">
             <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white">Ürünü Düzenle</h2>
