@@ -146,9 +146,9 @@ export default function Menu() {
     }
   }, [cafe]);
 
-  // SCROLL SPY: Kullanıcı sayfayı kaydırdıkça ekrandaki kategoriyi tespit et
+  // SCROLL SPY: Yalnızca yükleme tamamlandığında 1 kez bağlanır
   useEffect(() => {
-    if (isLoading || !categories || categories.length === 0) return;
+    if (isLoading || categories.length === 0) return;
 
     const observerOptions = {
       root: null,
@@ -177,13 +177,13 @@ export default function Menu() {
         const el = document.getElementById(`category-${cat.id}`) || categoryRefs.current[cat.id];
         if (el) observer.observe(el);
       });
-    }, 100);
+    }, 150);
 
     return () => {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [categories, productsByCategory, isLoading]);
+  }, [isLoading, categories.length]); // productsByCategory bağımlılığı kaldırılarak çift tetiklenme önlendi!
 
   // AUTO-SCROLL CATEGORY BAR: Seçili kategori değiştiğinde üst menü butonunu merkeze kaydır
   useEffect(() => {
@@ -198,67 +198,43 @@ export default function Menu() {
     }
   }, [activeCategory]);
 
-  // PARALLEL FETCHING: Promise.all ile paralel veri çekme
+  // OPTİMİZE EDİLMİŞ TEK SEFERLİK VERİ ÇEKME (Zero-Waterfall)
   const fetchCafeData = async () => {
     try {
       const hostname = window.location.hostname;
       const baseDomains = ['localhost', '127.0.0.1', 'benimsistemim.com', 'qr-menu-saas.com'];
       const isCustomDomain = !baseDomains.includes(hostname) && !hostname.endsWith('.benimsistemim.com');
 
-      let currentCafe = null;
-
-      if (isCustomDomain) {
-        // Kendi alan adını (custom domain) kullanan kafeyi getir
-        const cafeRes = await fetch(`${API_BASE_URL}/api/cafes/domain/${hostname}`);
-        if (!cafeRes.ok) {
-          setError("Bu alan adına ait bir kafe bulunamadı.");
-          setIsLoading(false);
-          return;
-        }
-        currentCafe = await cafeRes.json();
-      } else {
-        // Standart slug üzerinden kafeyi getir
-        if (!slug) {
-          setError("Lütfen geçerli bir kafe adresi giriniz.");
-          setIsLoading(false);
-          return;
-        }
-        const cafeRes = await fetch(`${API_BASE_URL}/api/cafes/slug/${slug}`);
-        if (!cafeRes.ok) {
-          setError("Böyle bir kafe bulunamadı.");
-          setIsLoading(false);
-          return;
-        }
-        currentCafe = await cafeRes.json();
+      // Domain veya Slug belirle
+      const identifier = isCustomDomain ? hostname : slug;
+      if (!identifier) {
+        setError("Lütfen geçerli bir restoran bağlantısı giriniz.");
+        setIsLoading(false);
+        return;
       }
-      
-      setCafe(currentCafe);
 
-      const catRes = await fetch(`${API_BASE_URL}/api/categories/${currentCafe.id}`);
-      const catData = await catRes.json();
-      setCategories(catData);
+      // TEK BİRLEŞİK İSTEK: Kafe + Kategoriler + Ürünler birlikte döner
+      const response = await fetch(`${API_BASE_URL}/api/cafes/full-menu/${identifier}`);
       
-      if (catData.length > 0) {
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        setError(errData.error || "Restoran menüsü bulunamadı.");
+        setIsLoading(false);
+        return;
+      }
+
+      const { cafe: cafeData, categories: catData, productsByCategory: prodData } = await response.json();
+
+      setCafe(cafeData);
+      setCategories(catData || []);
+      setProductsByCategory(prodData || {});
+
+      if (catData && catData.length > 0) {
         setActiveCategory(catData[0].id);
       }
-
-      // Kategori ürünlerini paralel olarak tek seferde çekiyoruz (Promise.all)
-      const productPromises = catData.map(category =>
-        fetch(`${API_BASE_URL}/api/products/${category.id}`)
-          .then(res => res.json())
-          .then(data => ({ categoryId: category.id, data }))
-      );
-
-      const productResults = await Promise.all(productPromises);
-      const productsMap = {};
-      productResults.forEach(item => {
-        productsMap[item.categoryId] = item.data;
-      });
-      setProductsByCategory(productsMap);
-
     } catch (err) {
-      console.error(err);
-      setError("Bağlantı hatası oluştu.");
+      console.error("Veri bağlantı hatası:", err);
+      setError("Sunucuya bağlanırken bir hata oluştu.");
     } finally {
       setIsLoading(false);
     }

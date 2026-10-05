@@ -61,6 +61,7 @@ export default function Admin() {
   const fetchCafes = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/cafes`, {
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -76,6 +77,7 @@ export default function Admin() {
   const fetchStats = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/stats`, {
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -172,6 +174,7 @@ export default function Admin() {
 
       const response = await fetch(url, {
         method,
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload),
       });
@@ -206,6 +209,7 @@ export default function Admin() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: getHeaders()
       });
       
@@ -225,7 +229,15 @@ export default function Admin() {
     }
   };
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (e) {
+      // Offline/fallback
+    }
     logout();
     navigate('/login', { replace: true });
   };

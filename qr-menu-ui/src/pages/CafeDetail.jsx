@@ -199,6 +199,7 @@ export default function CafeDetail() {
   const fetchCafeDetails = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -292,6 +293,7 @@ export default function CafeDetail() {
 
       const response = await fetch(`${API_BASE_URL}/api/cafes/${id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload),
       });
@@ -326,6 +328,7 @@ export default function CafeDetail() {
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -380,6 +383,7 @@ export default function CafeDetail() {
 
       const response = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload),
       });
@@ -419,6 +423,7 @@ export default function CafeDetail() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/categories/${categoryToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: getHeaders()
       });
 
@@ -448,6 +453,7 @@ export default function CafeDetail() {
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${category.id}`, {
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -490,6 +496,7 @@ export default function CafeDetail() {
 
       const response = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
+        credentials: 'include',
         headers: getHeaders(),
         body: formData,
       });
@@ -524,6 +531,7 @@ export default function CafeDetail() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products`, {
         method: 'POST',
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           category_id: selectedCategory.id,
@@ -567,6 +575,7 @@ export default function CafeDetail() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: getHeaders()
       });
       if (handleAuthError(response)) return;
@@ -582,6 +591,7 @@ export default function CafeDetail() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${productId}/toggle`, {
         method: 'PUT',
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ is_active: !currentStatus }),
       });
@@ -630,6 +640,7 @@ export default function CafeDetail() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${selectedProductToEdit.id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           name: editProductFormData.name,
@@ -739,7 +750,15 @@ export default function CafeDetail() {
               </button>
               {/* Çıkış Yap Butonu */}
               <button 
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                      method: 'POST',
+                      credentials: 'include'
+                    });
+                  } catch (e) {
+                    // Offline fallback
+                  }
                   logout();
                   navigate('/login', { replace: true });
                 }}

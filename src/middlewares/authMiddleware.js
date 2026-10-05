@@ -1,16 +1,20 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
-// JWT Token Doğrulama Middleware
+// JWT Token Doğrulama Middleware (Cookie & Header Uyumlu)
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token bulunamadı. Yetkisiz erişim.' });
+  let token = null;
+
+  // 1. Önce HttpOnly Cookie'den, yoksa Authorization Bearer başlığından token'ı oku
+  if (req.cookies && req.cookies.adminToken) {
+    token = req.cookies.adminToken;
+  } else if (req.headers['authorization']) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader.split(' ')[1];
   }
 
-  const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ error: 'Token formatı geçersiz. Yetkisiz erişim.' });
+    return res.status(401).json({ error: 'Token bulunamadı. Yetkisiz erişim.' });
   }
 
   try {
@@ -18,12 +22,9 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     req.admin = decoded; // Geriye dönük uyumluluk için
 
-    // Superadmin kontrolü (role = superadmin veya ENV ADMIN_USERNAME ile eşleşen token)
-    const isSuperAdmin = decoded.role === 'superadmin' || 
-                         (decoded.username && decoded.username === process.env.ADMIN_USERNAME) ||
-                         (!decoded.role && decoded.username && decoded.username === process.env.ADMIN_USERNAME);
-
-    if (isSuperAdmin) {
+    // GÜVENLİK YAMASI: Sadece token içindeki imzalı 'superadmin' rolü kabul edilir.
+    // Username üzerinden yapılan bypass tamamen kaldırılmıştır.
+    if (decoded.role === 'superadmin') {
       req.user.role = 'superadmin';
     }
 
@@ -31,6 +32,16 @@ const verifyToken = (req, res, next) => {
   } catch (err) {
     return res.status(403).json({ error: 'Geçersiz veya süresi geçmiş token.' });
   }
+};
+
+// YENİ: Sadece Süper Admin Kontrol Middleware'i
+const verifySuperAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'superadmin') {
+    return res.status(403).json({ 
+      error: 'Yetkisiz işlem: Bu operasyon yalnızca Süper Admin yetkisiyle gerçekleştirilebilir.' 
+    });
+  }
+  next();
 };
 
 // Multi-Tenant Güvenlik ve Yetki Kontrolü Middleware
@@ -136,5 +147,6 @@ const verifyCafeOwnership = async (req, res, next) => {
 
 module.exports = {
   verifyToken,
-  verifyCafeOwnership
+  verifyCafeOwnership,
+  verifySuperAdmin
 };

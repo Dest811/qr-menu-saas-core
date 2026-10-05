@@ -160,7 +160,27 @@ async function run() {
       console.warn("Language columns check failed:", langColErr.message);
     }
 
-    console.log("MIGRATION SUCCESS: All database tables are fully configured!");
+    // Ensure critical performance and search indexes exist
+    console.log("Veritabanı indeksleri kontrol ediliyor / oluşturuluyor...");
+    try {
+      await client.query(`
+        -- Foreign Key İndeksleri (Full Table Scan Engelleyiciler)
+        CREATE INDEX IF NOT EXISTS idx_categories_cafe_id ON categories (cafe_id);
+        CREATE INDEX IF NOT EXISTS idx_products_category_id ON products (category_id);
+        CREATE INDEX IF NOT EXISTS idx_products_is_active ON products (is_active);
+        CREATE INDEX IF NOT EXISTS idx_categories_order_index ON categories (cafe_id, order_index ASC);
+
+        -- Case-Insensitive Sorgu Hızlandırıcı Expression İndeksleri
+        CREATE INDEX IF NOT EXISTS idx_cafes_lower_slug ON cafes (LOWER(slug));
+        CREATE INDEX IF NOT EXISTS idx_cafes_lower_custom_domain ON cafes (LOWER(custom_domain)) WHERE custom_domain IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_cafes_lower_username ON cafes (LOWER(username)) WHERE username IS NOT NULL;
+      `);
+      console.log("✓ Kritik performans ve arama indeksleri başarıyla oluşturuldu.");
+    } catch (indexErr) {
+      console.warn("İndeks oluşturma uyarısı:", indexErr.message);
+    }
+
+    console.log("MIGRATION SUCCESS: All database tables and indexes are fully configured!");
   } catch (err) {
     console.error("MIGRATION FAILED:", err.message);
   } finally {

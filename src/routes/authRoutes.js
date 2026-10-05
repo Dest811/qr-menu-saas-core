@@ -8,4 +8,7 @@ router.post('/login', authController.login);
 // Özel Kafe Sahibi Giriş Rotası
 router.post('/cafe-login', authController.loginCafe);
 
+// Çıkış Rotası (Cookie Temizleme)
+router.post('/logout', authController.logout);
+
 module.exports = router;

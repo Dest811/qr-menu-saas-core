@@ -325,6 +325,70 @@ const deleteCafe = async (req, res) => {
   }
 };
 
+// 8. Menüyü tek seferde getir (GET /full-menu/:identifier) - (Açık rota)
+const getFullMenu = async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const cleanId = cleanStr(identifier);
+    if (!cleanId) {
+      return res.status(400).json({ error: "Geçersiz kafe adresi veya alan adı." });
+    }
+
+    // 1. Kafeyi bul (Slug veya Custom Domain ile)
+    const cafeResult = await pool.query(
+      'SELECT * FROM cafes WHERE LOWER(slug) = LOWER($1) OR LOWER(custom_domain) = LOWER($1) LIMIT 1',
+      [cleanId]
+    );
+
+    if (cafeResult.rows.length === 0) {
+      return res.status(404).json({ error: "Bu adrese ait bir restoran bulunamadı." });
+    }
+
+    const cafe = cafeResult.rows[0];
+
+    // 2. Kafenin kategorilerini sıralı getir
+    const categoriesResult = await pool.query(
+      'SELECT * FROM categories WHERE cafe_id = $1 ORDER BY order_index ASC, created_at ASC',
+      [cafe.id]
+    );
+    const categories = categoriesResult.rows;
+
+    // 3. Kafeye ait tüm kategorilerin ürünlerini tek bir JOIN ile çek
+    const productsResult = await pool.query(
+      `SELECT p.* 
+       FROM products p 
+       JOIN categories c ON p.category_id = c.id 
+       WHERE c.cafe_id = $1 
+       ORDER BY p.created_at DESC`,
+      [cafe.id]
+    );
+
+    // Ürünleri kategori ID'sine göre bellekte grupla
+    const productsByCategory = {};
+    categories.forEach(cat => {
+      productsByCategory[cat.id] = [];
+    });
+
+    productsResult.rows.forEach(product => {
+      if (productsByCategory[product.category_id]) {
+        productsByCategory[product.category_id].push(product);
+      }
+    });
+
+    // Hassas şifre hash'ini istemciye göndermiyoruz
+    const { password_hash, ...safeCafe } = cafe;
+
+    return res.json({
+      cafe: safeCafe,
+      categories,
+      productsByCategory
+    });
+  } catch (err) {
+    console.error("Full Menu Fetch Hatası:", err.message);
+    return res.status(500).json({ error: "Menü verileri yüklenirken sunucu hatası oluştu." });
+  }
+};
+
 const authController = require('./authController');
 
 module.exports = {
@@ -332,6 +396,7 @@ module.exports = {
   getCafeById,
   getCafeBySlug,
   getCafeByDomain,
+  getFullMenu,
   createCafe,
   updateCafe,
   deleteCafe,
