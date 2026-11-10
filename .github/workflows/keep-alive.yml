@@ -1,0 +1,28 @@
+name: Supabase & Render Keep-Alive
+
+on:
+  schedule:
+    # Her 6 saatte bir çalışır (Günde 4 kez Supabase'e sorgu atarak 7 günlük uyku modunu engeller)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # İstenirse GitHub sekmesinden manuel olarak da tetiklenebilir
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend & Supabase DB
+        run: |
+          echo "Sunucu ve veritabanı kontrol ediliyor..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://qr-menu-saas-core.onrender.com/api/test-db)
+          echo "HTTP Yanıt Kodu: $response"
+          if [ "$response" -ne 200 ]; then
+            echo "İlk deneme zaman aşımına uğradı veya sunucu uyanıyor, 10 saniye bekleyip tekrar deneniyor..."
+            sleep 10
+            response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://qr-menu-saas-core.onrender.com/api/test-db)
+            echo "İkinci Deneme HTTP Yanıt Kodu: $response"
+          fi
+          if [ "$response" -ne 200 ]; then
+            echo "Hata: Veritabanı veya sunucu yanıt vermedi!"
+            exit 1
+          fi
+          echo "Başarılı! Render ve Supabase aktif."
