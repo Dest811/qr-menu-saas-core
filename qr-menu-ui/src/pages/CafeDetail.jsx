@@ -262,7 +262,7 @@ export default function CafeDetail() {
         primary_color: branding.primary_color,
         accent_color: branding.accent_color,
         bg_color: branding.bg_color,
-        custom_domain: branding.custom_domain,
+        ...(!isCafeOwner ? { custom_domain: branding.custom_domain } : {}),
         working_hours: branding.working_hours || '',
         maps_url: branding.maps_url || '',
         instagram_url: branding.instagram_url || '',
@@ -724,7 +724,10 @@ export default function CafeDetail() {
                   href={(() => {
                     const hostname = window.location.hostname;
                     if (cafeDetails.custom_domain && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                      return `http://${cafeDetails.custom_domain}`;
+                      return `https://${cafeDetails.custom_domain.replace(/^https?:\/\//, '')}`;
+                    }
+                    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                      return `https://qr-menu-musteri.vercel.app/${cafeDetails.slug}`;
                     }
                     return `http://localhost:5174/${cafeDetails.slug}`;
                   })()}
@@ -1178,17 +1181,19 @@ export default function CafeDetail() {
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-slate-400 mb-1 text-sm font-medium">Özel Alan Adı (Custom Domain)</label>
-                  <input 
-                    type="text" 
-                    value={branding.custom_domain}
-                    onChange={(e) => setBranding({...branding, custom_domain: e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, '')})}
-                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white text-sm"
-                    placeholder="Örn: altinbalik.com"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Kafenin kendi özel alan adı (White-label).</p>
-                </div>
+                {!isCafeOwner && (
+                  <div className="mb-4">
+                    <label className="block text-slate-400 mb-1 text-sm font-medium">Özel Alan Adı (Custom Domain)</label>
+                    <input 
+                      type="text" 
+                      value={branding.custom_domain}
+                      onChange={(e) => setBranding({...branding, custom_domain: e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, '')})}
+                      className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white text-sm"
+                      placeholder="Örn: altinbalik.com"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Kafenin kendi özel alan adı (White-label).</p>
+                  </div>
+                )}
 
                 {/* İletişim ve Ekstra Bilgiler Ekle Toggle */}
                 <div className="border-t border-slate-700/50 pt-4 mt-4">

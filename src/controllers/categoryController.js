@@ -51,7 +51,7 @@ const createCategory = async (req, res) => {
     res.json(newCategory.rows[0]);
   } catch (err) {
     console.error("Kategori ekleme hatası:", err.message);
-    res.status(500).json({ error: "Kategori eklenirken hata oluştu: " + err.message });
+    res.status(500).json({ error: "Kategori eklenirken bir sunucu hatası oluştu." });
   }
 };
 
@@ -91,7 +91,7 @@ const updateCategory = async (req, res) => {
     res.json(updatedCategory.rows[0]);
   } catch (err) {
     console.error("Kategori güncelleme hatası:", err.message);
-    res.status(500).json({ error: "Kategori güncellenirken hata oluştu: " + err.message });
+    res.status(500).json({ error: "Kategori güncellenirken bir sunucu hatası oluştu." });
   }
 };
 

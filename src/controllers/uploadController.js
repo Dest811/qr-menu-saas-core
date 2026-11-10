@@ -40,7 +40,7 @@ const uploadImage = async (req, res) => {
     console.error('R2 Yükleme Hatası:', error);
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: 'Görsel yüklenirken bir sunucu hatası oluştu.'
     });
   }
 };

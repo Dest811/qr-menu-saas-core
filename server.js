@@ -23,6 +23,9 @@ const pool = require('./src/config/db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Render / Cloudflare Reverse Proxy arkasında gerçek istemci IP'sini okumak için (Rate Limit doğruluğu)
+app.set('trust proxy', 1);
+
 // ==========================================
 // 1. STATİK VE DİNAMİK CORS YAPILANDIRMASI
 // ==========================================
@@ -42,7 +45,17 @@ async function isCustomDomainAllowed(hostname) {
   if (now - lastCacheUpdate > 120000) { // 2 dakika cache
     try {
       const result = await pool.query("SELECT custom_domain FROM cafes WHERE custom_domain IS NOT NULL AND custom_domain != ''");
-      customDomainCache = new Set(result.rows.map(r => r.custom_domain.toLowerCase().trim()));
+      const domains = new Set();
+      result.rows.forEach(r => {
+        const d = r.custom_domain.toLowerCase().trim();
+        domains.add(d);
+        if (d.startsWith('www.')) {
+          domains.add(d.slice(4));
+        } else {
+          domains.add(`www.${d}`);
+        }
+      });
+      customDomainCache = domains;
       lastCacheUpdate = now;
     } catch (e) {
       console.error("CORS Custom domain cache hatası:", e.message);

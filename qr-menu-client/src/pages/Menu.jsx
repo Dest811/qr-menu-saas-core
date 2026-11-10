@@ -326,11 +326,28 @@ export default function Menu() {
     );
   }
 
+  // Güvenli URL doğrulayıcı (javascript: protokolü ve CSS enjeksiyonu koruması)
+  const getSafeUrl = (urlStr) => {
+    if (!urlStr || typeof urlStr !== 'string') return '';
+    const trimmed = urlStr.trim();
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return trimmed.replace(/['"()\\]/g, '');
+      }
+    } catch (e) {
+      // Geçersiz URL
+    }
+    return '';
+  };
+
   // Branding renkleri
   const primaryColor = cafe.primary_color || '#1A3626';
   const accentColor = cafe.accent_color || '#D4AF37';
   const bgColor = cafe.bg_color || '#F9F7F2';
-  const coverImage = cafe.hero_image || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+  const coverImage = getSafeUrl(cafe.hero_image) || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop';
+  const safeMapsUrl = getSafeUrl(cafe.maps_url);
+  const safeInstagramUrl = getSafeUrl(cafe.instagram_url);
 
   return (
     <div 
@@ -343,15 +360,15 @@ export default function Menu() {
       <header className="relative z-[100] pt-24 pb-20 px-6 text-center shadow-lg">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('${coverImage}')` }}
+          style={{ backgroundImage: `url("${coverImage}")` }}
         ></div>
         <div className="absolute inset-0 opacity-75 mix-blend-multiply transition-colors duration-500" style={{ backgroundColor: primaryColor }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
         
         {/* Yol Tarifi Al (Sol Üst Köşeye Sabitlenmiş Şık Kapsül) */}
-        {cafe.maps_url && cafe.maps_url.trim() !== '' && (
+        {safeMapsUrl && (
           <a 
-            href={cafe.maps_url} 
+            href={safeMapsUrl} 
             target="_blank" 
             rel="noopener noreferrer" 
             className="absolute top-4 left-4 z-20 flex items-center gap-1.5 text-xs text-white bg-black/50 backdrop-blur-md py-2 px-3.5 rounded-full hover:bg-black/70 transition-all font-semibold shadow-md border border-white/10"
@@ -578,7 +595,7 @@ export default function Menu() {
       {/* FOOTER ALANI */}
       {((cafe.working_hours && cafe.working_hours.trim() !== '') || 
         (cafe.phone_number && cafe.phone_number.trim() !== '') || 
-        (cafe.instagram_url && cafe.instagram_url.trim() !== '')) && (
+        safeInstagramUrl) && (
         <footer 
           className="w-full border-t border-slate-200 mt-12 py-8 flex flex-col items-center gap-4 text-center px-6"
           style={{ borderColor: `${primaryColor}15` }}
@@ -592,7 +609,7 @@ export default function Menu() {
 
           {cafe.phone_number && cafe.phone_number.trim() !== '' && (
             <a 
-              href={`tel:${cafe.phone_number.replace(/\s+/g, '')}`}
+              href={`tel:${cafe.phone_number.replace(/[^0-9+]/g, '')}`}
               className="flex items-center gap-1.5 text-slate-600 hover:opacity-80 transition-opacity text-sm font-medium"
               style={{ color: primaryColor }}
             >
@@ -601,9 +618,9 @@ export default function Menu() {
             </a>
           )}
 
-          {cafe.instagram_url && cafe.instagram_url.trim() !== '' && (
+          {safeInstagramUrl && (
             <a 
-              href={cafe.instagram_url}
+              href={safeInstagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 hover:opacity-85 transition-opacity text-sm font-semibold"
